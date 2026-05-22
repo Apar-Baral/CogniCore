@@ -22,6 +22,7 @@ dev = ["pytest>=8.2.0"]
 cognition = "hermes_cognition"
 
 [project.scripts]
+hermes-cognition = "hermes_cognition.cli_commands:main"
 hermes-cognition-doctor = "hermes_cognition.cli_standalone:doctor_main"
 
 [tool.setuptools.packages.find]

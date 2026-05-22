@@ -162,6 +162,25 @@ Use this when Hermes runs inside a **Linux VM** (Ubuntu/Debian/Kali) on VMware W
    git clone https://github.com/Apar-Baral/CognitionEngine.git
    ```
 
+   **If clone says `git@github.com: Permission denied (publickey)`** even with `https://` URLs, Git is rewriting HTTPS → SSH. On Kali this is usually a global `insteadOf` rule. Fix permanently, or clone once with config disabled:
+
+   ```bash
+   # See what rewrites GitHub URLs (note the config file path)
+   git config --list --show-origin | grep -i insteadof
+
+   # Remove the bad rule (HTTPS must NOT become git@github.com)
+   git config --global --unset-all url.git@github.com:.insteadof
+
+   # One-shot clone ignoring global/system git config (works immediately)
+   cd ~/Desktop
+   GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
+     git clone https://github.com/Apar-Baral/CogniCore.git
+   GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
+     git clone https://github.com/Apar-Baral/CognitionEngine.git
+   ```
+
+   No SSH keys are required; both repos are public.
+
 4. **Install plugin**:
 
    ```bash

@@ -124,6 +124,11 @@ def _doctor() -> int:
     return 0 if ok else 1
 
 
+def main() -> None:
+    """Console entry: ``hermes-cognition`` (use when ``hermes cognition`` is unavailable)."""
+    raise SystemExit(run_cli(sys.argv[1:]))
+
+
 def _print_help() -> None:
     print(
         """Hermes Cognition Engine commands:
