@@ -1,0 +1,375 @@
+---
+name: Hermes Cognition Integration
+overview: Integrate all 54 Cognition Engine features into your installed Hermes Agent (v0.14.0) via a portable pip-installable Hermes plugin that wraps the existing Dream Cognition Engine library (~32 features already built), with phased delivery, cross-feature wiring, and a universal Windows/Linux installer.
+todos:
+  - id: scaffold-plugin
+    content: Create packages/hermes-cognition with pyproject.toml entry point hermes_agent.plugins, plugin.yaml, register(ctx) stub, paths.py (.cognition + .hermes/cognition)
+    status: in_progress
+  - id: install-scripts
+    content: Add scripts/install-hermes-cognition.ps1 and .sh that pip-install into detected Hermes venv on Windows/Linux
+    status: pending
+  - id: ce-facade
+    content: Add CognitionFacade in Dream CE (or vendor copy) exposing init/start/end/validate/status without src.* imports
+    status: pending
+  - id: phase1-hooks
+    content: "Wire Cluster A: on_session_start bootstrap inject, on_session_end DNA/session persist, hermes cognition init CLI"
+    status: pending
+  - id: phase2-shield
+    content: "Wire Cluster B: pre_tool_call shield on write_file/patch/file_edit + avoid registry feedback"
+    status: pending
+  - id: phase3-budget
+    content: "Wire Cluster C: pre_llm_call/post_api_request budget zones + 90% wrap-up + handoff chain"
+    status: pending
+  - id: phase4-9
+    content: Deliver planning, viz CLI, optimizer session-end, transfer/, multi-agent delegate wrapper, model router — per phase table
+    status: pending
+  - id: docs-config
+    content: Write docs/INTEGRATION.md + example config.yaml snippet and dogfood example project
+    status: pending
+isProject: false
+---
+
+# Hermes Cognition Engine — 54-Feature Integration Plan
+
+## Current state (what you have today)
+
+| Asset | Location | Role |
+|-------|----------|------|
+| Feature spec | [Features.txt](e:\MAJOR PROJECT - HERMES WITH COGNITION\Features.txt) | 54 features across 10 categories |
+| Hermes install | `C:\Users\lenovo\AppData\Local\hermes\` (v0.14.0) | Runtime: CLI, gateway, plugins, `config.yaml` |
+| Hermes source | `C:\Users\lenovo\AppData\Local\hermes\hermes-agent\` | Reference for hooks/APIs |
+| Cognition Engine impl | `E:\Dream - Cognition Engine\packages\cognition-engine\` | **~32 implemented**, **~14 partial**, **8 missing** |
+| This workspace | Only `Features.txt` | Greenfield for the **Hermes adapter** package |
+
+**Strategy:** Do not fork Hermes core. Ship a **`hermes-cognition`** plugin (pip entry point `hermes_agent.plugins`) that depends on **`cognition-engine`** as a library. Reuse Dream CE modules; build only the 8 missing features + Hermes glue.
+
+---
+
+## Target architecture
+
+```mermaid
+flowchart TB
+  subgraph hermes [Hermes Agent v0.14+]
+    CLI[hermes CLI / gateway]
+    Loop[AIAgent loop]
+    Hooks[Plugin hooks]
+    Tools[Built-in tools]
+    Delegate[delegate_task]
+  end
+
+  subgraph plugin [hermes-cognition plugin]
+    Register[register ctx]
+    Bridge[CognitionBridge]
+    Slash[/cognition commands]
+    CEtools[CE tools: plan validate status]
+  end
+
+  subgraph ce [cognition-engine library]
+    DNA[dna memory bootstrap]
+    Shield[shield]
+    Proxy[proxy budget]
+    Planner[planner navigator]
+    Viz[visualization]
+    Models[models router]
+    Opt[optimizer]
+    Transfer[transfer NEW]
+    Orch[orchestration NEW]
+  end
+
+  subgraph data [Project data - portable]
+    CognDir[".cognition/ primary"]
+    HermDir[".hermes/cognition/ fallback"]
+    Global["~/.cognition/ global registry"]
+  end
+
+  CLI --> Loop
+  Loop --> Hooks
+  Hooks --> Bridge
+  Bridge --> ce
+  ce --> data
+  Register --> Bridge
+  CEtools --> Bridge
+  Loop --> Delegate
+  Delegate --> Orch
+```
+
+### Portable install (any Hermes on Windows or Linux)
+
+One installer targets **Hermes’s own venv**, not a second agent:
+
+| Platform | Command | Effect |
+|----------|---------|--------|
+| Windows | `scripts/install-hermes-cognition.ps1` | `pip install` into `%LOCALAPPDATA%\hermes\hermes-agent\venv` |
+| Linux/macOS/WSL | `scripts/install-hermes-cognition.sh` | `pip install` into `~/.hermes/hermes-agent/venv` (or detected `hermes` venv) |
+| Any (manual) | `hermes-agent-venv/bin/pip install hermes-cognition` | Same result |
+
+**Distribution shape:**
+
+```toml
+# hermes-cognition/pyproject.toml
+[project]
+dependencies = ["cognition-engine>=0.3.54"]
+
+[project.entry-points."hermes_agent.plugins"]
+cognition = "hermes_cognition:register"
+```
+
+After install: enable in [config.yaml](C:\Users\lenovo\AppData\Local\hermes\config.yaml):
+
+```yaml
+plugins:
+  enabled:
+    - cognition
+cognition:
+  enabled: true
+  data_dir: auto          # .cognition/ primary, .hermes/cognition/ fallback
+  shield: { mode: medium, block_writes: true }
+  budget: { session_tokens: 200000, zones: true }
+  bootstrap: { inject_on_session_start: true, max_tokens: 2000 }
+  semantic_index: false   # opt-in Chroma (~4GB)
+```
+
+**Project init (once per repo):** `hermes cognition init` → writes DNA + creates `.cognition/`; if `.hermes/cognition/` exists, migrate/merge per your choice (**both paths supported**).
+
+---
+
+## Hermes extension surface map (all 54 features)
+
+| # | Feature | Hermes surface | CE module to reuse | Notes |
+|---|---------|----------------|-------------------|-------|
+| **Cat 1 — Persistent memory** |
+| 1 | Project DNA | Tools + `on_session_*` hooks | `dna/*`, `memory/*` | `.cognition/dna.json` + atomic loader |
+| 2 | Phase state machine | Tools + slash `/phase` | `dna/mutator`, `navigator/phase_tracker` | Valid transitions enforced in bridge |
+| 3 | Sub-task tracking | Tools | `dna/mutator` | Link to Hermes `task_id` in hook kwargs |
+| 4 | Architecture graph | Tool `cognition_index` | `memory/graph_indexer` | Run on `init` / `index` |
+| 5 | Feature registry | Tools | `dna/mutator` emergent APIs | Partial in CE — add workflow in plugin |
+| 6 | Avoid registry | Bootstrap + shield | `bootstrap/avoid_register` | Feed `pre_tool_call` blocks into avoid list |
+| **Cat 2 — Validation** |
+| 7 | Truth database | Tool + `pre_tool_call` | `shield/truth_database` | Optional `[semantic]` extra |
+| 8 | Import validator | Shield pipeline | `shield/import_validator` | |
+| 9 | Function call validator | Shield pipeline | `shield/static_analyzer` | Partial — extend in Phase 2 |
+| 10 | 3-stage pipeline | Config `shield.stage` | `shield/validation_pipeline` | Stage 1 now; 2/3 stubs |
+| 11 | Auto-corrector | `transform_tool_result` | `shield/auto_corrector` | Return corrected JSON to model |
+| 12 | Validation stats | `post_tool_call` observer | `PipelineStats` | Persist into DNA metrics |
+| **Cat 3 — Budget** |
+| 13 | Token counting | `pre_llm_call` / `post_api_request` | `proxy/token_counter` | tiktoken + Anthropic |
+| 14 | 5-zone enforcement | `pre_llm_call` block | `proxy/budget_enforcer` | Return block message like shield |
+| 15 | 90% wrap-up | `transform_llm_output` or system inject | `budget_enforcer` WRAP_UP | Allow 5% grace for summary |
+| 16 | Cost projection | Slash `/budget` + hook metrics | `proxy/cost_projector` | Map Hermes model pricing from config |
+| 17 | Usage patterns | `post_tool_call` | `proxy/usage_analyzer` | Hash file reads via `read_file` |
+| 18 | Efficiency score | `on_session_end` | `memory/operational_memory` | Align weights to spec in Phase 3 |
+| **Cat 4 — Session continuity** |
+| 19 | 3-tier context compiler | Context engine **or** `on_session_start` inject | `bootstrap/context_compiler` | Prefer custom context engine plugin slot if you need compression integration |
+| 20 | Predictive pre-compile | Background thread on init | `bootstrap/precompiler` | Warm cache on project open |
+| 21 | Structured bootstrap | Inject into system prompt | `bootstrap_formatter` | Write `.cognition/bootstrap.md` |
+| 22 | Handoff integration | `on_session_end` → next `on_session_start` | session `completion_notes` | Wire wrap-up (#15) → bootstrap (#19) |
+| 23 | Do not repeat | Bootstrap tier 1 | `avoid_register` | Top-5 relevance |
+| **Cat 5 — Planning** |
+| 24 | Auto-phase generator | Tool + `/plan` | `planner/phase_generator` | Optional LLM enrich |
+| 25 | Dependency resolver | Tool output | `navigator/dependency_resolver` | NetworkX topo/critical path |
+| 26 | Deviation integrator | Tool | `dna/mutator` + **new** strategy engine | CE partial — implement 5 strategies |
+| 27 | Feature impact | Tool | `navigator/complexity_forecaster` | Extend heuristics |
+| 28 | Project analyzer | `init` / tool | `scanner/project_scanner` | |
+| **Cat 6 — Visualization** |
+| 29–34 | Maps, dashboard, heat, Gantt, compact, detail | CLI `hermes cognition status` + slash commands | `visualization/*` | Rich output; no TUI port |
+| **Cat 7 — Self-learning** |
+| 35–41 | Patterns, trends, RL, rewards, recommendations | `on_session_end` | `optimizer/*`, `synthesizer/*` | RL Q-table in DNA |
+| **Cat 8 — Cross-project** |
+| 42–45 | Registry, patterns, similarity, plan bootstrap | New `transfer/` package + global `~/.cognition/projects/` | **Missing in CE** — build in Phase 7 |
+| **Cat 9 — Multi-agent** |
+| 46–49 | Specialized agents, decompose, merge, conflicts | Hermes `delegate_task` + plugin orchestration | **Missing** — wrap delegate, don’t rebuild gateway |
+| **Cat 10 — Models** |
+| 50–54 | Registry, router, circuit breaker, normalize, cost compare | Model provider plugin **or** `pre_llm_call` router | Reuse `models/*`; sync with `config.yaml` models |
+
+### What Hermes already provides (do not rebuild)
+
+Per [Features.txt](e:\MAJOR PROJECT - HERMES WITH COGNITION\Features.txt) lines 155–165: gateway, session SQLite, skills, MCP, plugin hooks, basic multi-agent (`delegate_task`), cron, web search, conversational memory.
+
+---
+
+## Feature combination clusters (build and wire together)
+
+These clusters share data and must be implemented in the same phase to avoid broken handoffs.
+
+### Cluster A — Project brain (features 1–6, 19–23, 28)
+
+**Flow:** `init` → scan (#28) → DNA (#1) → plan (#24–25) → `on_session_start` → bootstrap (#19–21, #23) → work → `on_session_end` → handoff (#22) + avoid updates (#6).
+
+```mermaid
+sequenceDiagram
+  participant User
+  participant Hermes
+  participant Bridge
+  participant DNA as dna.json
+  participant Boot as bootstrap.md
+
+  User->>Hermes: new session
+  Hermes->>Bridge: on_session_start
+  Bridge->>DNA: load phase subtasks avoid
+  Bridge->>Boot: ContextCompiler 3-tier
+  Bridge->>Hermes: inject bootstrap into prompt
+  User->>Hermes: work session
+  Hermes->>Bridge: on_session_end
+  Bridge->>DNA: session summary handoff metrics
+  Bridge->>Boot: precompile next scenarios
+```
+
+**Data path resolution (your choice — both supported):**
+
+1. If `./.cognition/dna.json` exists → use `.cognition/`
+2. Else if `./.hermes/cognition/dna.json` → use `.hermes/cognition/`
+3. On `init`, create `.cognition/`; if legacy `.hermes/cognition/` only, copy → `.cognition/` once (idempotent migration flag in DNA metadata)
+
+### Cluster B — Shield loop (features 6–12, 23)
+
+**Flow:** `pre_tool_call` on `write_file` / `patch` / `file_edit` → validate (#7–10) → block or auto-correct (#11) → on failure, append to avoid registry (#6) → stats (#12) → next bootstrap warns (#23).
+
+### Cluster C — Budget + continuity (features 13–18, 15, 22)
+
+**Flow:** Every API call → count tokens (#13) → zone check (#14) → at 90% inject wrap-up (#15) → session end writes handoff consumed next start (#22) → efficiency + usage (#17–18) stored in DNA.
+
+**Hook mapping:** `pre_llm_call` (block/warn), `post_api_request` (metering), `on_session_end` (scores).
+
+### Cluster D — Planning + adaptation (features 24–28, 5, 26–27)
+
+**Flow:** User adds feature → impact (#27) → deviation strategy (#26) → update feature registry (#5) → reorder phases (#25).
+
+### Cluster E — Visualization (features 29–34)
+
+Read-only over DNA + session metrics; expose via `hermes cognition status [--detailed|--phase]` and `/status`.
+
+### Cluster F — Learning flywheel (features 35–41, 12, 37)
+
+**Flow:** Session end → synthesizer (#35–36) → trends (#41) → recommendations (#40) → RL update (#38–39) → calibration (#37) → DNA insights → optional inject in bootstrap.
+
+### Cluster G — Cross-project transfer (features 42–45) — new code
+
+**Flow:** Project complete → extract patterns (#43) → global registry (#42) → new `init` → similarity (#44) → plan bootstrap (#45).
+
+Depends on Cluster A DNA schema; store global data under `~/.cognition/` (OS-neutral via `pathlib`).
+
+### Cluster H — Multi-agent dev (features 46–49) — new code
+
+**Flow:** Phase sub-tasks (#3) → decomposer (#47) → `delegate_task` with role-specific prompts (#46) → result merger (#48) → conflict resolver (#49).
+
+Uses Hermes native delegation; plugin supplies prompts, contracts, and merge tooling — not a second agent runtime.
+
+### Cluster I — Model intelligence (features 50–54)
+
+**Flow:** Task complexity estimate → router (#51) → circuit breaker on failures (#52) → normalized provider calls (#53) → cost compare UI (#54).
+
+Integrate with existing [config.yaml](C:\Users\lenovo\AppData\Local\hermes\config.yaml) `model.default` / `providers` — router suggests override in `pre_llm_call` or slash `/model recommend`.
+
+---
+
+## Repository layout to create (in this workspace)
+
+```
+e:\MAJOR PROJECT - HERMES WITH COGNITION\
+├── Features.txt                    # existing spec
+├── packages\
+│   └── hermes-cognition\           # NEW thin adapter
+│       ├── pyproject.toml          # entry point + depends on cognition-engine
+│       ├── plugin.yaml             # manifest for directory install fallback
+│       ├── hermes_cognition\
+│       │   ├── __init__.py         # register(ctx)
+│       │   ├── bridge.py           # CognitionBridge (paths, lazy CE context)
+│       │   ├── paths.py            # .cognition + .hermes/cognition resolver
+│       │   ├── hooks\              # session, llm, tool hooks
+│       │   ├── tools\              # schemas + handlers
+│       │   ├── cli.py              # hermes cognition * subcommands
+│       │   └── skills\             # bundled SKILL.md for agent procedures
+│       └── tests\
+├── scripts\
+│   ├── install-hermes-cognition.ps1
+│   └── install-hermes-cognition.sh
+└── docs\
+    └── INTEGRATION.md
+```
+
+**Dream CE changes (minimal):** Publish `cognition-engine` to PyPI or install editable from Git; add `transfer/` and `orchestration/` packages for features 42–49; expose a stable **`CognitionFacade`** API (thin wrapper over `ProjectContext` in [context.py](E:\Dream - Cognition Engine\packages\cognition-engine\src\cli\context.py)) so the Hermes plugin does not import `src.*` paths directly.
+
+---
+
+## Phased delivery (recommended order)
+
+| Phase | Scope | Features | Exit criteria |
+|-------|--------|----------|---------------|
+| **0** | Packaging + install scripts + path resolver | — | `hermes plugins list` shows `cognition`; `hermes cognition doctor` passes on Win + Linux |
+| **1** | Cluster A | 1–6, 19–23, 28 | `hermes cognition init` + new session injects bootstrap; DNA persists across restarts |
+| **2** | Cluster B | 7–12, 23 | `write_file` blocked/corrected on hallucinated imports; avoid registry grows |
+| **3** | Cluster C | 13–18, 15, 22 | Budget zones block at 100%; wrap-up at 90%; handoff in next session |
+| **4** | Cluster D | 24–28, 5, 26–27 | `hermes cognition plan` produces phased roadmap in DNA |
+| **5** | Cluster E | 29–34 | `hermes cognition status` renders maps/dashboards |
+| **6** | Cluster F | 35–41 | Session end updates insights + RL in DNA |
+| **7** | Cluster G | 42–45 | Second project bootstraps faster from global registry |
+| **8** | Cluster H | 46–49 | Parallel `delegate_task` with merge/conflict tools |
+| **9** | Cluster I | 50–54 | `/model recommend` + fallback chain; YAML registry hot-reload |
+
+**Partial CE items to complete during phases:** #5 workflows, #9 type checks, #10 stages 2–3, #16 Hermes pricing bridge, #17 full 3σ, #18 weight formula, #22 wrap-up content, #26 five strategies.
+
+---
+
+## Key Hermes hooks (from installed source)
+
+Use only [VALID_HOOKS](C:\Users\lenovo\AppData\Local\hermes\hermes-agent\hermes_cli\plugins.py):
+
+| Hook | Cognition use |
+|------|----------------|
+| `on_session_start` | Load DNA, inject bootstrap (#19–23) |
+| `on_session_end` / `on_session_finalize` | Persist session, handoff, RL, insights |
+| `pre_tool_call` | Shield block (#7–11); budget block file ops at EXHAUSTED |
+| `transform_tool_result` | Return auto-corrected tool results (#11) |
+| `post_tool_call` | Usage analyzer (#17), validation stats (#12) |
+| `pre_llm_call` | Budget zones (#14), model router hint (#51) |
+| `post_api_request` | Token/cost metering (#13, #16) |
+| `transform_llm_output` | Wrap-up message at 90% (#15) |
+
+`pre_tool_call` can return a block message (same pattern as terminal approval) — use for shield and budget hard stops.
+
+---
+
+## Cognition tools exposed to the model (representative set)
+
+Register ~12 tools (not 54 — avoid context bloat); group by toolset `cognition`:
+
+- `cognition_init`, `cognition_plan`, `cognition_status`, `cognition_phase_update`
+- `cognition_validate`, `cognition_index`, `cognition_record_avoid`
+- `cognition_budget`, `cognition_impact`, `cognition_delegate` (wraps `delegate_task`)
+- `cognition_recommend_model`
+
+Slash commands mirror CLI: `/cognition start`, `/cognition end`, `/cognition status`.
+
+Bundled skill: `cognition-dev-orchestrator` — when to call each tool, DNA conventions, bootstrap reading.
+
+---
+
+## Cross-platform portability checklist
+
+- All paths via `pathlib.Path`; no hardcoded `C:\` or `/home`
+- Hermes home: use Hermes’s `get_hermes_home()` when integrating config; CE global config stays `~/.cognition/` (or `%USERPROFILE%\.cognition` on Windows)
+- Install script detects venv: `where hermes` → dirname → `..\venv\Scripts\python` (Win) or `bin/python` (Unix)
+- Optional extras: `pip install cognition-engine[semantic]` only when Chroma needed
+- No dependency on CE Textual TUI (`repl/`) — Hermes remains the only chat UI
+- Version pin: `cognition-engine==0.3.54` until facade API stabilizes
+
+---
+
+## Testing strategy
+
+| Layer | Tests |
+|-------|--------|
+| CE library | Existing pytest in Dream repo — keep as source of truth |
+| Plugin | `tests/` with mocked `PluginContext`; hook contract tests mirroring [test_model_tools.py](C:\Users\lenovo\AppData\Local\hermes\hermes-agent\tests\test_model_tools.py) |
+| Integration | Dogfood project under `examples/hermes-dogfood/` with `.cognition/dna.json` |
+| Manual | Windows: your install; Linux: WSL `hermes cognition doctor` |
+
+---
+
+## Immediate next steps (after plan approval)
+
+1. Scaffold `packages/hermes-cognition` in this workspace with `register(ctx)` stub and path resolver (`.cognition` + `.hermes/cognition`).
+2. Add `install-hermes-cognition.ps1` targeting `C:\Users\lenovo\AppData\Local\hermes\hermes-agent\venv`.
+3. Implement Phase 1 hooks (`on_session_start` / `on_session_end`) calling Dream CE `BootstrapGenerator` + `DNALoader`.
+4. Enable plugin in `config.yaml` and verify with `HERMES_PLUGINS_DEBUG=1 hermes plugins list`.
+5. Extract `CognitionFacade` in Dream CE; publish or editable-install for repeatable cross-machine setup.

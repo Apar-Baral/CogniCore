@@ -1,0 +1,169 @@
+Here is the complete list of features we want to add to Hermes Agent to transform it into Cognition Engine, organized by category.
+
+---
+
+## FEATURE LIST: COGNITION ENGINE ON HERMES
+
+---
+
+### CATEGORY 1: PERSISTENT PROJECT MEMORY
+
+These features give Hermes long-term awareness of the software project it's working on. Hermes' native memory remembers conversations and personal facts — we extend it to understand project structure, phases, dependencies, and progress.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 1 | **Project DNA Storage** | Stores the master plan (24 phases), architecture graph, feature registry, and session history as structured JSON with atomic writes and backup recovery | Hermes forgets project state between sessions. This gives it a permanent, queryable project memory |
+| 2 | **Phase State Machine** | Manages phase status transitions with validation — NOT_STARTED→IN_PROGRESS→IN_REVIEW→COMPLETED, with BLOCKED and CANCELLED states | Hermes has no concept of project phases. This enforces valid progress tracking |
+| 3 | **Sub-Task Tracking** | Tracks individual sub-tasks within phases with progress percentages, assigned agents, token estimates, and completion criteria | Hermes tracks tasks but not in a structured software development hierarchy |
+| 4 | **Architecture Graph** | Maintains a directed graph of project components (nodes) and their dependencies (edges) with status tracking | Hermes doesn't model software architecture. This enables impact analysis |
+| 5 | **Feature Registry** | Tracks both planned features (from the original plan) and emergent features (discovered during development) with integration status | Hermes can't track what features were planned vs discovered. This prevents scope creep |
+| 6 | **Avoid Registry** | Records hallucinations caught, files fully understood, approaches that failed, and deprecated patterns — with relevance scoring | Hermes makes the same mistakes repeatedly. This is its externalized memory of failures |
+
+---
+
+### CATEGORY 2: CODE VALIDATION & HALLUCINATION PREVENTION
+
+These features validate AI-generated code before it touches the filesystem. Hermes generates code but doesn't verify it — we add a quality assurance layer.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 7 | **Truth Database** | Indexes every real function, class, method, and importable symbol in the codebase and installed packages into ChromaDB with embeddings for semantic search | Hermes hallucinates imports and function calls. This is the source of truth for validation |
+| 8 | **Import Validator** | Checks every import statement against requirements.txt, stdlib list, and the truth database. Detects invented packages, misspellings, and wrong-symbol imports | Import hallucinations are the most common AI mistake. This catches them before code is written |
+| 9 | **Function Call Validator** | Validates function calls against real signatures — checks argument count, keyword argument names, and type compatibility using Levenshtein distance for typo suggestions | The AI invents function names and parameters. This blocks broken calls |
+| 10 | **3-Stage Validation Pipeline** | Stage 1: Static AST analysis (<100ms). Stage 2: Semantic analysis (future). Stage 3: Runtime sandbox (future). Configurable sensitivity: LOW/MEDIUM/HIGH | Hermes has no validation pipeline. This provides defense in depth |
+| 11 | **Auto-Corrector** | Generates corrected code when hallucinations are detected. Confidence-scored: HIGH auto-apply, MEDIUM suggest, LOW flag. Produces unified diffs | Blocking without fixing frustrates users. This provides the fix, not just the error |
+| 12 | **Validation Statistics** | Tracks total validations, hallucination rate by category, auto-correction success rate, and average validation time | Enables trend analysis and proves the shield's value |
+
+---
+
+### CATEGORY 3: BUDGET INTELLIGENCE & COST CONTROL
+
+These features give users complete control over AI spending. Hermes tracks costs but doesn't enforce limits or predict budgets — we add financial intelligence.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 13 | **Multi-Model Token Counting** | Accurately counts tokens using tiktoken for OpenAI models, Anthropic's tokenizer for Claude, and estimation for unknown models. Tracks by category | Hermes reports token usage but doesn't count precisely enough for budget enforcement |
+| 14 | **5-Zone Budget Enforcement** | GREEN (0-60%): normal. YELLOW (60-85%): mild warnings. RED (85-90%): urgent warnings. WRAP_UP (90-100%): handoff trigger. EXHAUSTED (100%): block all calls | Hermes has no budget enforcement. Users get surprise bills |
+| 15 | **90% Graceful Wrap-Up** | When budget hits 90%, injects system message requesting a structured handoff summary (accomplishments, unfinished work, resume point, decisions, next steps). Allows 5% overage to complete the summary | No AI tool does this. Transforms a frustrating cutoff into a productive handoff |
+| 16 | **Real-Time Cost Projection** | Calculates exact cost after every API call. Projects remaining cost based on burn rate. Calculates savings from intelligent model routing | Hermes shows costs but doesn't project or optimize them |
+| 17 | **Usage Pattern Analysis** | Detects file re-reads (content hash tracking), AI loops (response pattern matching), runaway consumption (anomaly detection at 3 standard deviations), and calculates efficiency scores (0-100) | Hermes doesn't detect wasteful patterns. This identifies inefficiencies in real-time |
+| 18 | **Session Efficiency Scoring** | Computes 0-100 score weighted: 40% code output per token, 30% re-read ratio, 20% tool call efficiency, 10% user acceptance rate | Gamifies optimization and provides a clear metric for improvement |
+
+---
+
+### CATEGORY 4: SESSION CONTINUITY & CONTEXT MANAGEMENT
+
+These features eliminate the "what was I doing?" friction at the start of every session. Hermes has session resume but doesn't provide structured, token-efficient context — we add intelligent bootstrapping.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 19 | **3-Tier Context Compiler** | Tier 1 (always included): current phase, active sub-task, last decisions, files modified, critical gotchas. Tier 2 (compressed if needed): phase details, file summaries. Tier 3 (if budget allows): overall progress, historical stats. Target: 2000 tokens | Hermes context is generic. This provides precisely what's needed for the current task |
+| 20 | **Predictive Pre-Compilation** | Analyzes project state to predict most likely next action. Pre-compiles bootstrap context for top 3 scenarios. Caches with 24-hour TTL. Tracks prediction accuracy | Hermes compiles context on demand. This makes context instant 70%+ of the time |
+| 21 | **Structured Bootstrap Format** | Generates visually structured bootstrap with box-drawing characters, clear sections (CURRENT MISSION, LAST SESSION, RELEVANT FILES, DO NOT REPEAT, BUDGET), and consistent formatting | Clean, scannable context helps the AI parse instructions faster |
+| 22 | **Handoff Summary Integration** | Captures the 90% wrap-up handoff summary and feeds it directly into the next session's bootstrap as primary context | Creates a perfect chain of continuity: every session ends with a summary for the next |
+| 23 | **"Do Not Repeat" Injection** | Queries avoid registry for items relevant to current task. Injects top 5 most relevant warnings into bootstrap. Tracks whether warnings were followed | Prevents the AI from repeating known mistakes |
+
+---
+
+### CATEGORY 5: PROJECT PLANNING & ADAPTATION
+
+These features give Hermes strategic project awareness. Hermes can decompose tasks but doesn't generate comprehensive development roadmaps — we add long-term planning and adaptation.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 24 | **Auto-Phase Generator** | Takes project analysis + user goal → generates 20-30 phases using dependency-aware decomposition. Each phase: 2-5 sessions, clear deliverables, 3-8 sub-tasks, estimated tokens | Hermes plans tasks, not projects. This provides a complete development roadmap |
+| 25 | **Dependency Resolver** | Builds directed graph of phases. Topological sort for execution order. Critical path calculation with Dijkstra's algorithm. Circular dependency detection. Parallel phase identification | Hermes doesn't model phase dependencies. This prevents ordering mistakes |
+| 26 | **Deviation Integrator** | Handles unplanned features. Classifies type (DEPENDENCY/ENHANCEMENT/INDEPENDENT/PARADIGM_SHIFT). Calculates disruption score (0-1). Selects from 5 integration strategies: absorb, weave, mini-phase, parallel, replan | Projects change. This adapts the plan without losing completed work |
+| 27 | **Feature Impact Analysis** | When adding a feature, analyzes: dependency impact (affected components), architectural coherence (fit with existing patterns), phase shift (phases to reorder/add), rework required (completed work to redo) | Prevents "small feature" from delaying the project by weeks |
+| 28 | **Project Analyzer** | Scans codebase to detect language, frameworks, dependencies, entry points, existing architecture. Provides context for plan generation | Hermes doesn't analyze project structure before planning |
+
+---
+
+### CATEGORY 6: PROGRESS TRACKING & VISUALIZATION
+
+These features transform raw project data into instantly understandable visual displays. Hermes has no project visualization — we add beautiful terminal-based progress maps and dashboards.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 29 | **Phase Progress Map** | ASCII/Unicode display of all phases with status icons (✅🔄👁️🔒⬜), color-coded progress bars, "YOU ARE HERE" pointer, blocker reasons, completion percentages, dependency indicators | A 200-line JSON means nothing. A color progress map is instantly understood |
+| 30 | **Live Session Dashboard** | Real-time display: budget bar with zone coloring, token count, cost, efficiency score, active agents, hallucinations caught, burn rate, estimated time remaining | Hermes has no live dashboard. This provides session awareness at a glance |
+| 31 | **Token Heat Maps** | Visualizes token consumption by file. Each file shown as proportionally sized bar. Color intensity indicates token density. Highlights re-read waste in red | Instantly identifies "this one config file consumed 40% of session tokens" |
+| 32 | **Gantt Chart Timeline** | Phases as horizontal bars by date. Color by status (green complete, yellow active, outlined planned). Dependency arrows. Today marker line. Critical path highlighted | Answers "when will this be done?" at a glance |
+| 33 | **Compact Progress Bar** | Single-line version for shell prompts: status icons in sequence, overall percentage, phase count. Fits in terminal status bars | Quick check without running a full command |
+| 34 | **Phase Detail View** | Detailed view of one phase: description, all sub-tasks with mini progress bars, dependencies with statuses, session history, files modified, token consumption | Drill-down for detailed understanding |
+
+---
+
+### CATEGORY 7: SELF-LEARNING & OPTIMIZATION
+
+These features make the system genuinely smarter over time. Hermes has basic session logging but doesn't extract patterns, learn, or optimize — we add machine learning that improves with every session.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 35 | **Productivity Pattern Detection** | Groups sessions by time of day, day of week, agent count, model choice. Calculates average efficiency per group. Detects statistically significant patterns | "Your afternoon sessions are 23% more efficient" — actionable insight from data |
+| 36 | **Hallucination Trend Analysis** | Tracks hallucination rate over time. Identifies most common categories and packages. Detects emerging patterns before they become problems | Proactive prevention: "Import hallucinations are increasing — consider pre-loading package docs" |
+| 37 | **Estimation Accuracy Tracking** | Compares predicted vs actual token consumption. Adjusts prediction buffer based on accuracy history. Recommends buffer changes when consistent bias detected | Predictions get better over time, saving money |
+| 38 | **RL Token Allocation Optimizer** | Full Q-learning: state = session type + project size. Action = token allocation percentages. Reward = weighted efficiency. Epsilon-greedy exploration with decay. Q-table persisted in DNA | Static splits are suboptimal. The system learns optimal allocation for your specific work |
+| 39 | **Multi-Factor Reward Function** | Calculates session reward: 40% efficiency, 30% budget adherence, 20% code quality, 10% task completion. Normalized to 0-100 | Defines "good" in a balanced way, preventing optimization of one metric at others' expense |
+| 40 | **Recommendation Builder** | Converts insights to prioritized recommendations. Each has type, priority score, rationale, estimated effort, expected impact. Tracks acceptance and outcomes | Analysis without action is noise. This closes the loop |
+| 41 | **Trend Detection Engine** | Exponential moving averages for all metrics. Anomaly detection at 2 standard deviations. Linear regression forecasting. Pearson correlation between metrics | Point-in-time metrics tell you where you are. Trends tell you where you're going |
+
+---
+
+### CATEGORY 8: CROSS-PROJECT LEARNING
+
+These features transfer successful patterns from completed projects to accelerate new ones. Hermes has no cross-project awareness — we add a global learning layer.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 42 | **Project Registry** | Global registry of all projects: type, language, framework, phase sequences used, agent configurations, budget allocations, hallucination patterns, success metrics | Every project starts from zero without this. Past experience is wasted |
+| 43 | **Pattern Extractor** | Mines completed projects for successful patterns: phase sequences, agent configs, budget splits. Generalizes by stripping project-specific details | "Database implementation for Python web apps takes 3-4 sessions with 2 backend agents" |
+| 44 | **Similarity Engine** | Embeds projects for semantic similarity search. Finds top 5 most similar past projects. Scores transferability based on similarity × pattern generality | Not all past projects are relevant. This finds the right ones |
+| 45 | **Plan Bootstrapper** | Uses transferred patterns to generate initial master plan for new projects. Adapts templates to new project specifics. Calibrates estimates with historical data | Second project starts faster than first. Tenth project starts dramatically faster |
+
+---
+
+### CATEGORY 9: MULTI-AGENT ORCHESTRATION
+
+These features enable parallel AI agents working on different aspects of the project simultaneously. Hermes has basic multi-agent support — we specialize it for software development.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 46 | **Specialized Agent Types** | Architect (design only), Backend Dev (implementation), Frontend Dev (UI), Security Reviewer (audit), Test Writer (tests), Doc Writer (docs), Refactor (improvement). Each has specific prompt template and capability requirements | Hermes agents are generic. Specialized agents produce better results |
+| 47 | **Task Decomposer** | Breaks phases into agent-sized work units. Identifies independent components for parallelization. Defines interface contracts between agents. Sizes units for 20-50k tokens | Without decomposition, parallel work creates conflicts |
+| 48 | **Result Merger** | Combines outputs from parallel agents. Three-way merge for same-file modifications. Consistency checks after merging. Test execution if tests produced | Parallel agents produce parallel outputs that need integration |
+| 49 | **Conflict Resolver** | Detects incompatible changes. Resolution strategies: last-write-wins, semantic merging, dependency-based priority, majority vote. Manual resolution for complex conflicts | Conflicts are inevitable in parallel work. This handles them gracefully |
+
+---
+
+### CATEGORY 10: DYNAMIC MODEL MANAGEMENT
+
+These features ensure the system works with any LLM provider without code changes. Hermes already supports 200+ models — we make it fully dynamic and add intelligent routing.
+
+| # | Feature | What It Does | Why Hermes Needs It |
+|---|---|---|---|
+| 50 | **Dynamic Model Registry** | YAML-based model definitions. Add any model by editing a file — no code changes. Supports Anthropic, OpenAI, DeepSeek, Gemini, OpenRouter, Ollama, custom endpoints. File watcher auto-reloads on changes | Models change monthly. Hardcoded support becomes stale. Dynamic registry is future-proof |
+| 51 | **Intelligent Model Router** | Routes tasks based on complexity: LOW→economy tier, MEDIUM→standard tier, HIGH→premium tier. Budget-aware: RED zone forces economy tier. Prefers reliable models with lowest cost in tier | Using premium models for everything wastes money. This saves 40-60% on API costs |
+| 52 | **Circuit Breaker Fallback** | 3 failures in 60 seconds → circuit opens (5 min cooldown). Exponential backoff: 5→10→20→40 min max. Automatic fallback to next model in chain. Probe request to test recovery | Models go down. This keeps the system working without user intervention |
+| 53 | **Request/Response Normalization** | Unified internal format for all providers. Provider-specific builders translate to Anthropic/OpenAI/Gemini formats. Response parsers normalize back to unified format | Components don't need to know which provider they're talking to |
+| 54 | **Cost Comparison Engine** | Estimates task cost across all capable models. Shows absolute cost and percentage difference from cheapest. Recommends best value model for the task | Informed model selection saves money |
+
+---
+
+## TOTAL: 54 FEATURES ACROSS 10 CATEGORIES
+
+### What Hermes Already Provides (We Don't Rebuild)
+
+- Multi-platform gateway (CLI, Telegram, Discord, Slack, web dashboard)
+- Session state management and persistence
+- Skill framework for custom tools
+- MCP client for connecting external servers
+- Plugin architecture with hook system
+- Basic multi-agent coordination
+- Cron scheduling for recurring tasks
+- Web search and browsing capabilities
+- Memory foundation (we extend it, not replace it)
+
+### What We Add (The Cognition Engine Difference)
+
+The 54 features above transform Hermes from a general-purpose AI agent into a specialized AI development orchestrator with persistent project memory, hallucination prevention, budget intelligence, session continuity, strategic planning, beautiful visualizations, self-learning optimization, cross-project knowledge transfer, parallel development orchestration, and dynamic model management.

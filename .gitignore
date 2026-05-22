@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+
+# Tests / tools
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Cognition project data (per-repo, not committed)
+.cognition/
+.hermes/
+cognition-dna.json
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+Desktop.ini
+
+# Local plans (optional — remove line if you want Plan.txt in repo)
+# Plan.txt

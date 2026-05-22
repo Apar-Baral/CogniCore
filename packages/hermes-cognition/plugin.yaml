@@ -1,0 +1,27 @@
+name: cognition
+version: 0.1.0
+description: Cognition Engine — project DNA, shield, budget, planning, and session continuity for Hermes
+provides_tools:
+  - cognition_init
+  - cognition_plan
+  - cognition_status
+  - cognition_phase_update
+  - cognition_validate
+  - cognition_index
+  - cognition_record_avoid
+  - cognition_budget
+  - cognition_impact
+  - cognition_delegate
+  - cognition_recommend_model
+  - cognition_graphify_index
+  - cognition_graphify_navigate
+  - cognition_graphify_status
+provides_hooks:
+  - on_session_start
+  - on_session_end
+  - pre_tool_call
+  - post_tool_call
+  - transform_tool_result
+  - pre_llm_call
+  - post_api_request
+  - transform_llm_output

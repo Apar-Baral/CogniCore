@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-cognition"
+version = "0.1.0"
+description = "Hermes Agent plugin integrating Cognition Engine (54-feature dev orchestrator)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "cognition-engine>=0.3.54",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+semantic = ["cognition-engine[semantic]"]
+dev = ["pytest>=8.2.0"]
+
+[project.entry-points."hermes_agent.plugins"]
+cognition = "hermes_cognition"
+
+[project.scripts]
+hermes-cognition-doctor = "hermes_cognition.cli_standalone:doctor_main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hermes_cognition*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

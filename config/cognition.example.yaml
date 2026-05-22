@@ -1,0 +1,27 @@
+# Merge into Hermes config: %LOCALAPPDATA%\hermes\config.yaml (Windows)
+# or ~/.hermes/config.yaml (Linux / VMware guest)
+
+plugins:
+  enabled:
+    - cognition
+
+cognition:
+  enabled: true
+  data_dir: auto
+  migrate_legacy: true
+  shield:
+    mode: medium
+    block_writes: true
+  budget:
+    zones: true
+    session_tokens: 200000
+  bootstrap:
+    inject_on_session_start: true
+    max_tokens: 2000
+  semantic_index: false
+  graphify:
+    enabled: true
+    auto_index: true
+    navigation_token_budget: 8000
+    max_files: 400
+    block_rereads: false
