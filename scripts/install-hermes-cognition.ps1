@@ -78,38 +78,25 @@ Copy-Item (Join-Path $HermesPlugin "plugin.yaml") (Join-Path $UserPluginDir "plu
 Copy-Item (Join-Path $HermesPlugin "hermes_user_plugin\__init__.py") (Join-Path $UserPluginDir "__init__.py") -Force
 Write-Host "==> Registered user plugin at $UserPluginDir"
 
+$ExampleYaml = Join-Path $RepoRoot "config\cognition.example.yaml"
 & $VenvPython -c @"
 import sys
 from pathlib import Path
-try:
-    import yaml
-except ImportError:
-    print('WARN: PyYAML missing; enable cognition in config manually', file=sys.stderr)
-    sys.exit(0)
 cfg_path = Path.home() / '.hermes' / 'config.yaml'
+example = Path(r'$ExampleYaml')
 cfg_path.parent.mkdir(parents=True, exist_ok=True)
-cfg = {}
-if cfg_path.is_file():
-    cfg = yaml.safe_load(cfg_path.read_text(encoding='utf-8')) or {}
-if not isinstance(cfg, dict):
-    cfg = {}
-plugins = cfg.setdefault('plugins', {})
-if not isinstance(plugins, dict):
-    plugins = {}
-    cfg['plugins'] = plugins
-enabled = plugins.setdefault('enabled', [])
-if not isinstance(enabled, list):
-    enabled = []
-    plugins['enabled'] = enabled
-if 'cognition' not in enabled:
-    enabled.append('cognition')
-cog = cfg.setdefault('cognition', {})
-if not isinstance(cog, dict):
-    cog = {}
-    cfg['cognition'] = cog
-cog['enabled'] = True
-cfg_path.write_text(yaml.safe_dump(cfg, default_flow_style=False, sort_keys=False), encoding='utf-8')
-print(f'==> Updated {cfg_path}')
+text = cfg_path.read_text(encoding='utf-8') if cfg_path.is_file() else ''
+if 'cognition:' in text:
+    print(f'==> {cfg_path} already mentions cognition')
+    sys.exit(0)
+snippet = example.read_text(encoding='utf-8') if example.is_file() else ''
+backup = cfg_path.with_suffix('.yaml.bak')
+if cfg_path.is_file() and not backup.is_file():
+    backup.write_text(text, encoding='utf-8')
+with cfg_path.open('a', encoding='utf-8') as f:
+    f.write('\n\n# --- CogniCore (install-hermes-cognition.ps1) ---\n')
+    f.write(snippet)
+print(f'==> Appended cognition block to {cfg_path}')
 "@
 
 Write-Host ""

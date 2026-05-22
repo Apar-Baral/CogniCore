@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" role="img" aria-label="CogniCore feature clusters">
+  <rect width="960" height="320" fill="#0f172a" rx="12"/>
+  <text x="480" y="36" fill="#f8fafc" font-family="Segoe UI, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">10 Feature Clusters · 54 Capabilities</text>
+
+  <g font-family="Segoe UI, system-ui, sans-serif" font-size="11">
+    <rect x="24" y="56" width="168" height="72" rx="8" fill="#1e3a5f" stroke="#3b82f6"/><text x="108" y="82" fill="#93c5fd" text-anchor="middle" font-weight="600">A Memory</text><text x="108" y="100" fill="#cbd5e1" text-anchor="middle">DNA · Phases</text><text x="108" y="116" fill="#94a3b8" text-anchor="middle">#16, 1923</text>
+
+    <rect x="204" y="56" width="168" height="72" rx="8" fill="#3b1f4a" stroke="#a855f7"/><text x="288" y="82" fill="#d8b4fe" text-anchor="middle" font-weight="600">B Shield</text><text x="288" y="100" fill="#cbd5e1" text-anchor="middle">Validate imports</text><text x="288" y="116" fill="#94a3b8" text-anchor="middle">#712</text>
+
+    <rect x="384" y="56" width="168" height="72" rx="8" fill="#3f2a14" stroke="#f59e0b"/><text x="468" y="82" fill="#fcd34d" text-anchor="middle" font-weight="600">C Budget</text><text x="468" y="100" fill="#cbd5e1" text-anchor="middle">5 zones · 90% handoff</text><text x="468" y="116" fill="#94a3b8" text-anchor="middle">#1318</text>
+
+    <rect x="564" y="56" width="168" height="72" rx="8" fill="#134e4a" stroke="#14b8a6"/><text x="648" y="82" fill="#5eead4" text-anchor="middle" font-weight="600">D Planning</text><text x="648" y="100" fill="#cbd5e1" text-anchor="middle">Phases · Impact</text><text x="648" y="116" fill="#94a3b8" text-anchor="middle">#2428</text>
+
+    <rect x="744" y="56" width="192" height="72" rx="8" fill="#1e293b" stroke="#64748b"/><text x="840" y="82" fill="#e2e8f0" text-anchor="middle" font-weight="600">E Viz</text><text x="840" y="100" fill="#cbd5e1" text-anchor="middle">Progress maps</text><text x="840" y="116" fill="#94a3b8" text-anchor="middle">#2934</text>
+
+    <rect x="24" y="144" width="168" height="72" rx="8" fill="#312e81" stroke="#6366f1"/><text x="108" y="170" fill="#a5b4fc" text-anchor="middle" font-weight="600">F Learning</text><text x="108" y="188" fill="#cbd5e1" text-anchor="middle">Session insights</text><text x="108" y="204" fill="#94a3b8" text-anchor="middle">#3541</text>
+
+    <rect x="204" y="144" width="168" height="72" rx="8" fill="#422006" stroke="#ea580c"/><text x="288" y="170" fill="#fdba74" text-anchor="middle" font-weight="600">G Transfer</text><text x="288" y="188" fill="#cbd5e1" text-anchor="middle">Cross-project</text><text x="288" y="204" fill="#94a3b8" text-anchor="middle">#4245</text>
+
+    <rect x="384" y="144" width="168" height="72" rx="8" fill="#1e3a5f" stroke="#0ea5e9"/><text x="468" y="170" fill="#7dd3fc" text-anchor="middle" font-weight="600">H Multi-agent</text><text x="468" y="188" fill="#cbd5e1" text-anchor="middle">Roles · delegate</text><text x="468" y="204" fill="#94a3b8" text-anchor="middle">#4649</text>
+
+    <rect x="564" y="144" width="168" height="72" rx="8" fill="#14532d" stroke="#22c55e"/><text x="648" y="170" fill="#86efac" text-anchor="middle" font-weight="600">I Models</text><text x="648" y="188" fill="#cbd5e1" text-anchor="middle">Router · cost</text><text x="648" y="204" fill="#94a3b8" text-anchor="middle">#5054</text>
+
+    <rect x="744" y="144" width="192" height="72" rx="8" fill="#4c1d95" stroke="#c084fc"/><text x="840" y="170" fill="#e9d5ff" text-anchor="middle" font-weight="600">Graphify</text><text x="840" y="188" fill="#cbd5e1" text-anchor="middle">Graph memory</text><text x="840" y="204" fill="#94a3b8" text-anchor="middle">Token navigation</text>
+  </g>
+
+  <text x="480" y="280" fill="#64748b" font-family="Segoe UI, system-ui, sans-serif" font-size="12" text-anchor="middle">See docs/USER_GUIDE.md for commands per cluster</text>
+</svg>

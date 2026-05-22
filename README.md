@@ -1,239 +1,163 @@
-# CogniCore
+<p align="center">
+  <img src="docs/assets/cognicore-architecture.svg" alt="CogniCore architecture" width="720"/>
+</p>
 
-**CogniCore** turns [Hermes Agent](https://hermes-agent.nousresearch.com/) into a development orchestrator with persistent project memory, hallucination prevention, budget control, session continuity, and **Graphify** — a project graph for token-optimized navigation.
+<h1 align="center">CogniCore</h1>
 
-Built by **Apar Baral** ([@Apar-Baral](https://github.com/Apar-Baral))
+<p align="center">
+  <strong>Turn Hermes Agent into a development orchestrator</strong><br/>
+  Persistent project memory · Hallucination shield · Budget control · Graphify navigation
+</p>
 
-[![Hermes Plugin](https://img.shields.io/badge/Hermes-Agent%20Plugin-blue)](https://hermes-agent.nousresearch.com/docs/user-guide/features/plugins)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-green)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<p align="center">
+  <a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/plugins"><img src="https://img.shields.io/badge/Hermes-Agent%20Plugin-3b82f6?style=for-the-badge" alt="Hermes Plugin"/></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.11+-22c55e?style=for-the-badge" alt="Python 3.11+"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge" alt="MIT"/></a>
+</p>
+
+<p align="center">
+  <a href="docs/USER_GUIDE.md"><b>User Guide</b></a> ·
+  <a href="docs/TESTING.md"><b>Testing</b></a> ·
+  <a href="docs/INTEGRATION.md"><b>Integration</b></a> ·
+  <a href="Features.txt"><b>54 Features</b></a> ·
+  <a href="https://github.com/Apar-Baral/CognitionEngine"><b>Cognition Engine</b></a>
+</p>
+
+<p align="center">
+  Built by <a href="https://github.com/Apar-Baral"><b>Apar Baral</b></a>
+</p>
 
 ---
 
-## What you get
+## What is CogniCore?
 
-| Capability | Description |
-|------------|-------------|
-| **Project DNA** | Phases, sub-tasks, architecture graph, avoid registry — survives across sessions |
-| **Shield** | Validates imports and code before writes; blocks hallucinated APIs |
-| **Budget zones** | GREEN → YELLOW → RED → WRAP_UP → EXHAUSTED with 90% handoff |
-| **Bootstrap** | Injects structured context each session (~2000 tokens, tiered) |
-| **Graphify** | Remembers file/import graph; navigates by task to save tokens |
-| **Planning** | Auto phase plans, dependency order, impact analysis |
-| **Multi-agent** | Role-based `delegate_task` (architect, backend, security, …) |
+**CogniCore** is a [Hermes Agent](https://github.com/NousResearch/hermes-agent) plugin that connects Hermes to the **[Cognition Engine](https://github.com/Apar-Baral/CognitionEngine)** library. Hermes keeps doing the work (chat, files, terminal, gateway). CogniCore adds:
 
-Full feature map: [Features.txt](Features.txt) (54 capabilities). Deep integration guide: [docs/INTEGRATION.md](docs/INTEGRATION.md).
+- **Project DNA** — phases, sub-tasks, architecture graph across sessions  
+- **Shield** — block or fix bad imports before writes land on disk  
+- **Budget zones** — GREEN → YELLOW → RED → wrap-up at 90%  
+- **Bootstrap** — structured “where you left off” context each turn  
+- **Graphify** — project graph + token-smart file navigation  
+- **Planning & multi-agent** — phased roadmaps and role-based delegation  
+
+<p align="center">
+  <img src="docs/assets/feature-clusters.svg" alt="10 feature clusters" width="800"/>
+</p>
 
 ---
 
-## Architecture
+## How it works
 
+```mermaid
+flowchart TB
+  U[You] --> H[Hermes Agent]
+  H --> P[hermes-cognition plugin]
+  P --> CE[cognition-engine]
+  CE --> D[".cognition/ per project"]
+  CE --> G["~/.cognition/ registry"]
+  P --> HK[Hooks: shield · budget · bootstrap]
+  P --> TL[14 cognition_* tools]
 ```
-Hermes Agent (CLI / Gateway)
-        │
-        ▼
-  hermes-cognition plugin  ◄── CogniCore (this repo)
-        │
-        ▼
-  cognition-engine library ◄── https://github.com/Apar-Baral/CognitionEngine
-        │
-        ▼
-  .cognition/  (per project)  +  ~/.cognition/  (global registry)
-```
+
+| Layer | Repo | Role |
+|-------|------|------|
+| Agent | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | LLM loop, tools, gateway |
+| Plugin | **CogniCore** (this repo) | Hooks, tools, CLI, Graphify |
+| Library | [CognitionEngine](https://github.com/Apar-Baral/CognitionEngine) | DNA, shield, budget, planning |
 
 ---
 
-## Prerequisites
+## Quick start
 
-1. **Hermes Agent** installed ([install guide](https://hermes-agent.nousresearch.com/docs/getting-started/quickstart))
-2. **Python 3.11+** (Hermes ships its own venv)
-3. **cognition-engine** — clone sibling repo or set `COGNITION_ENGINE_PATH`:
+### 1. Prerequisites
+
+- [Hermes Agent](https://hermes-agent.nousresearch.com/docs/getting-started/quickstart) installed  
+- [Cognition Engine](https://github.com/Apar-Baral/CognitionEngine) cloned  
+
+### 2. Install (Linux / Kali / WSL)
 
 ```bash
+git clone https://github.com/Apar-Baral/CogniCore.git
 git clone https://github.com/Apar-Baral/CognitionEngine.git
+cd CogniCore
+export COGNITION_ENGINE_PATH="$HOME/CognitionEngine/packages/cognition-engine"
+bash scripts/install-hermes-cognition.sh
+export PATH="$HOME/.hermes/hermes-agent/venv/bin:$PATH"
+hermes-cognition doctor
+hermes plugins list
 ```
 
----
+**Git SSH error on clone?** Use [scripts/clone-repos-https.sh](scripts/clone-repos-https.sh) or see [Troubleshooting](#troubleshooting).
 
-## Quick install
-
-### Windows (native)
+### 3. Windows
 
 ```powershell
 git clone https://github.com/Apar-Baral/CogniCore.git
+git clone https://github.com/Apar-Baral/CognitionEngine.git
 cd CogniCore
-
-# Point to your Cognition Engine checkout
-$env:COGNITION_ENGINE_PATH = "C:\path\to\CognitionEngine\packages\cognition-engine"
-
+$env:COGNITION_ENGINE_PATH = "$HOME\CognitionEngine\packages\cognition-engine"
 .\scripts\install-hermes-cognition.ps1
+hermes-cognition doctor
 ```
 
-### Linux / VMware guest / WSL
+### 4. Use on a project
 
 ```bash
-git clone https://github.com/Apar-Baral/CogniCore.git
-cd CogniCore
-
-export COGNITION_ENGINE_PATH="$HOME/CognitionEngine/packages/cognition-engine"
-bash scripts/install-hermes-cognition.sh
+cd your-app-repo
+hermes-cognition init
+hermes-cognition plan "Build my application with tests and docs"
+hermes-cognition graphify index
+hermes -t terminal,file,web
 ```
 
-### Enable the plugin
-
-Copy [config/cognition.example.yaml](config/cognition.example.yaml) into your Hermes config:
-
-| OS | Config file |
-|----|-------------|
-| Windows | `%LOCALAPPDATA%\hermes\config.yaml` |
-| Linux / VMware | `~/.hermes/config.yaml` |
-
-Add under `plugins.enabled`: `cognition`, and merge the `cognition:` block.
-
-Verify:
-
-```bash
-hermes cognition doctor
-HERMES_PLUGINS_DEBUG=1 hermes plugins list   # should show cognition, 14 tools
-```
+Inside Hermes: `/cognition status`, `/cognition plan <goal>`, `/cognition end`.
 
 ---
 
-## Setup: Windows (step by step)
+## Documentation
 
-1. **Install Hermes** (if not already):
-
-   ```powershell
-   iex (irm https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.ps1)
-   ```
-
-2. **Clone repos**:
-
-   ```powershell
-   cd $HOME\Projects
-   git clone https://github.com/Apar-Baral/CogniCore.git
-   git clone https://github.com/Apar-Baral/CognitionEngine.git
-   ```
-
-3. **Install CogniCore into Hermes venv**:
-
-   ```powershell
-   cd CogniCore
-   $env:COGNITION_ENGINE_PATH = "$HOME\Projects\CognitionEngine\packages\cognition-engine"
-   .\scripts\install-hermes-cognition.ps1
-   ```
-
-4. **Configure** — edit `%LOCALAPPDATA%\hermes\config.yaml` (see [config/cognition.example.yaml](config/cognition.example.yaml)).
-
-5. **Initialize a project**:
-
-   ```powershell
-   cd your-app-repo
-   hermes cognition init
-   hermes cognition plan "Build my application with auth and API"
-   hermes cognition graphify index
-   hermes
-   ```
+| Guide | What you learn |
+|-------|----------------|
+| **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)** | **How to use every feature** — CLI, tools, hooks, clusters A–I, Graphify |
+| **[docs/TESTING.md](docs/TESTING.md)** | **Test checklist** — verify install and all clusters |
+| **[docs/INTEGRATION.md](docs/INTEGRATION.md)** | Config, architecture, troubleshooting |
+| **[Features.txt](Features.txt)** | Full 54-feature specification |
+| **[config/cognition.example.yaml](config/cognition.example.yaml)** | Copy into `~/.hermes/config.yaml` |
 
 ---
 
-## Setup: VMware Linux guest (step by step)
+## Feature summary
 
-Use this when Hermes runs inside a **Linux VM** (Ubuntu/Debian/Kali) on VMware Workstation/Fusion.
+| Cluster | Count | Highlights |
+|---------|-------|------------|
+| **A** Memory | 1–6, 19–23, 28 | DNA, phases, avoid registry, bootstrap |
+| **B** Shield | 7–12 | Import validation, auto-correct |
+| **C** Budget | 13–18 | Zones, 90% handoff, efficiency |
+| **D** Planning | 24–28 | Auto phases, impact analysis |
+| **E** Viz | 29–34 | Progress maps, dashboards |
+| **F** Learning | 35–41 | Session insights, RL optimizer |
+| **G** Transfer | 42–45 | Cross-project registry |
+| **H** Multi-agent | 46–49 | Roles + `cognition_delegate` |
+| **I** Models | 50–54 | Model recommendations |
+| **Graphify** | — | Graph index + navigate |
 
-1. **VM basics**
-   - Guest: Ubuntu 22.04+ or Kali (network NAT or bridged for API keys / git)
-   - RAM: 8 GB+ recommended if using semantic index (Chroma)
-   - Shared folder (optional): map host project into `/mnt/hgfs/...`
-
-2. **Install Hermes in the guest**:
-
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
-   source ~/.bashrc
-   hermes --version
-   ```
-
-3. **Clone CogniCore + Cognition Engine**:
-
-   ```bash
-   mkdir -p ~/dev && cd ~/dev
-   git clone https://github.com/Apar-Baral/CogniCore.git
-   git clone https://github.com/Apar-Baral/CognitionEngine.git
-   ```
-
-   **If clone says `git@github.com: Permission denied (publickey)`** even with `https://` URLs, Git is rewriting HTTPS → SSH. On Kali this is usually a global `insteadOf` rule. Fix permanently, or clone once with config disabled:
-
-   ```bash
-   # See what rewrites GitHub URLs (note the config file path)
-   git config --list --show-origin | grep -i insteadof
-
-   # Remove the bad rule (HTTPS must NOT become git@github.com)
-   git config --global --unset-all url.git@github.com:.insteadof
-
-   # One-shot clone ignoring global/system git config (works immediately)
-   cd ~/Desktop
-   GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
-     git clone https://github.com/Apar-Baral/CogniCore.git
-   GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
-     git clone https://github.com/Apar-Baral/CognitionEngine.git
-   ```
-
-   No SSH keys are required; both repos are public.
-
-4. **Install plugin**:
-
-   ```bash
-   cd ~/dev/CogniCore
-   export COGNITION_ENGINE_PATH="$HOME/dev/CognitionEngine/packages/cognition-engine"
-   bash scripts/install-hermes-cognition.sh
-   ```
-
-5. **Configure** — `nano ~/.hermes/config.yaml` and merge [config/cognition.example.yaml](config/cognition.example.yaml).
-
-6. **Work on a project** (host-shared or cloned in VM):
-
-   ```bash
-   cd /path/to/your/project
-   hermes cognition init
-   hermes cognition graphify index
-   hermes cognition graphify navigate "first task for this session"
-   hermes
-   ```
-
-**Tip:** If the project lives on the Windows host, clone or sync it into the VM (git, shared folder, or `scp`) so `.cognition/` and Hermes `cwd` stay on a Linux path.
+**Shipped in plugin:** 14 tools · 8 hooks · `hermes-cognition` CLI · Graphify
 
 ---
 
-## Daily usage
+## CLI cheat sheet
 
 | Command | Purpose |
 |---------|---------|
-| `hermes cognition init` | Create `.cognition/dna.json` |
-| `hermes cognition plan "<goal>"` | Generate phased roadmap |
-| `hermes cognition start` | Start CE session + bootstrap file |
-| `hermes cognition graphify index` | Build project graph |
-| `hermes cognition graphify navigate "<task>"` | Token-optimized file plan |
-| `hermes cognition status` | Phase progress |
-| `hermes cognition end` | Close session, insights, RL |
-| `hermes cognition doctor` | Check install health |
+| `hermes-cognition doctor` | Health check |
+| `hermes-cognition init` | Create `.cognition/` |
+| `hermes-cognition plan "<goal>"` | Phase roadmap |
+| `hermes-cognition start` / `end` | Session lifecycle |
+| `hermes-cognition status` | Progress |
+| `hermes-cognition graphify index` | Build file graph |
+| `hermes-cognition graphify navigate "<task>"` | Token-optimized file plan |
 
-**Inside Hermes chat:** `/cognition status`, `/cognition plan <goal>`, `/cognition end`
-
-**Agent tools:** `cognition_init`, `cognition_plan`, `cognition_validate`, `cognition_graphify_navigate`, `cognition_delegate`, …
-
----
-
-## Graphify (token optimization)
-
-Graphify builds an import/symbol graph and injects a **file reading plan** each turn so the model reads fewer, more relevant files.
-
-```bash
-hermes cognition graphify index
-hermes cognition graphify navigate "implement OAuth login"
-```
-
-Set `cognition.graphify.block_rereads: true` in config to block `read_file` on files already read 3+ times.
+Use **`hermes-cognition`** if `hermes cognition` is not available. Run **`hermes`** (with file/terminal tools) to build code — not `hermes -t cognition` only.
 
 ---
 
@@ -241,30 +165,28 @@ Set `cognition.graphify.block_rereads: true` in config to block `read_file` on f
 
 ```
 CogniCore/
-├── README.md                 # This page
-├── Features.txt              # 54-feature specification
-├── config/
-│   └── cognition.example.yaml
-├── packages/
-│   └── hermes-cognition/     # Hermes plugin (pip installable)
-├── scripts/
-│   ├── install-hermes-cognition.ps1
-│   └── install-hermes-cognition.sh
+├── README.md                      # Landing page (you are here)
+├── Features.txt                   # 54-feature spec
 ├── docs/
-│   └── INTEGRATION.md
-└── examples/
-    └── hermes-dogfood/
+│   ├── USER_GUIDE.md              # How to use all features
+│   ├── TESTING.md                 # Test checklist
+│   ├── INTEGRATION.md             # Technical integration
+│   └── assets/                    # SVG diagrams
+├── packages/hermes-cognition/     # Hermes plugin
+├── scripts/                       # Install + clone helpers
+└── config/cognition.example.yaml
 ```
 
 ---
 
-## Related projects
+## VMware / Kali guest
 
-| Repo | Role |
-|------|------|
-| [CogniCore](https://github.com/Apar-Baral/CogniCore) | Hermes plugin (this repo) |
-| [CognitionEngine](https://github.com/Apar-Baral/CognitionEngine) | Core library (`cognition-engine` pip package) |
-| [Hermes Agent](https://github.com/NousResearch/hermes-agent) | Upstream agent |
+Full VM walkthrough (HTTPS git fix, install, project workflow): **[docs/USER_GUIDE.md § Install](docs/USER_GUIDE.md#1-install--enable)** and README sections in commit history for Kali.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+# then CogniCore install script as above
+```
 
 ---
 
@@ -272,16 +194,27 @@ CogniCore/
 
 | Problem | Fix |
 |---------|-----|
-| `cognition` not in `hermes plugins list` | Add `cognition` under `plugins.enabled` in `config.yaml` |
-| `cognition-engine not installed` | Set `COGNITION_ENGINE_PATH` and re-run install script |
-| `hermes cognition` unknown | Re-run install script; restart terminal |
-| No bootstrap injected | Run `hermes cognition init` + `start`; check `bootstrap.inject_on_session_start` |
-| Graphify empty | Run `hermes cognition graphify index` |
+| `git@github.com: Permission denied` | `bash scripts/clone-repos-https.sh` or `git config --global --unset-all url.git@github.com:.insteadof` |
+| `hermes-cognition` not found | Re-run install; `export PATH="$HOME/.hermes/hermes-agent/venv/bin:$PATH"` |
+| Hermes YAML error | Fix `~/.hermes/config.yaml` — merge [config/cognition.example.yaml](config/cognition.example.yaml) manually |
+| `plugins enable cognition` fails | Re-run install (registers `~/.hermes/plugins/cognition/`) |
+| Agent cannot write files | Use `hermes` or `-t terminal,file,web`, not `-t cognition` only |
+| No bootstrap | `init` + `start`; set `bootstrap.inject_on_session_start: true` |
+
+---
+
+## Related repos
+
+| Repository | Description |
+|------------|-------------|
+| [CogniCore](https://github.com/Apar-Baral/CogniCore) | This plugin |
+| [CognitionEngine](https://github.com/Apar-Baral/CognitionEngine) | Core Python library |
+| [Hermes Agent](https://github.com/NousResearch/hermes-agent) | Upstream agent |
 
 ---
 
 ## Author
 
-**Apar Baral** — [@Apar-Baral](https://github.com/Apar-Baral) · dedsecaparb@gmail.com
+**Apar Baral** — [@Apar-Baral](https://github.com/Apar-Baral) · dedsecaparb@gmail.com  
 
-Contributions and issues welcome on [GitHub Issues](https://github.com/Apar-Baral/CogniCore/issues).
+Issues and contributions: [GitHub Issues](https://github.com/Apar-Baral/CogniCore/issues)

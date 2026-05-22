@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" role="img" aria-label="CogniCore architecture">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="hermes" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="plugin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="ce" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#047857"/>
+    </linearGradient>
+    <linearGradient id="data" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#b45309"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect width="920" height="420" fill="url(#bg)" rx="16"/>
+  <text x="460" y="42" fill="#f8fafc" font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="700" text-anchor="middle">CogniCore  Hermes + Cognition Engine</text>
+  <text x="460" y="68" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="13" text-anchor="middle">54 features · 14 tools · 8 hooks · Graphify</text>
+
+  <rect x="340" y="95" width="240" height="56" rx="10" fill="url(#hermes)" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="460" y="122" fill="#fff" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="middle">Hermes Agent</text>
+  <text x="460" y="140" fill="#dbeafe" font-family="Segoe UI, system-ui, sans-serif" font-size="11" text-anchor="middle">CLI · Gateway · delegate_task</text>
+
+  <line x1="460" y1="151" x2="460" y2="178" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="300" y="180" width="320" height="56" rx="10" fill="url(#plugin)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="460" y="207" fill="#fff" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="middle">hermes-cognition plugin</text>
+  <text x="460" y="225" fill="#ede9fe" font-family="Segoe UI, system-ui, sans-serif" font-size="11" text-anchor="middle">CogniCore (this repo)</text>
+
+  <line x1="460" y1="236" x2="460" y2="263" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="280" y="265" width="360" height="56" rx="10" fill="url(#ce)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="460" y="292" fill="#fff" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="600" text-anchor="middle">cognition-engine</text>
+  <text x="460" y="310" fill="#d1fae5" font-family="Segoe UI, system-ui, sans-serif" font-size="11" text-anchor="middle">DNA · Shield · Budget · Planning</text>
+
+  <line x1="460" y1="321" x2="460" y2="348" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="120" y="350" width="280" height="48" rx="8" fill="url(#data)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="260" y="372" fill="#fff" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">.cognition/</text>
+  <text x="260" y="388" fill="#fef3c7" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">per-project DNA · graphify · sessions</text>
+
+  <rect x="520" y="350" width="280" height="48" rx="8" fill="url(#data)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="660" y="372" fill="#fff" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">~/.cognition/</text>
+  <text x="660" y="388" fill="#fef3c7" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">global project registry</text>
+
+  <rect x="40" y="180" width="200" height="120" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="140" y="205" fill="#e2e8f0" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">Hooks (auto)</text>
+  <text x="140" y="228" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">on_session_start/end</text>
+  <text x="140" y="244" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">pre_tool_call (shield)</text>
+  <text x="140" y="260" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">pre_llm_call (bootstrap)</text>
+  <text x="140" y="276" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">post_api_request (budget)</text>
+
+  <rect x="680" y="180" width="200" height="120" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="780" y="205" fill="#e2e8f0" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" text-anchor="middle">14 Agent Tools</text>
+  <text x="780" y="228" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">init · plan · status</text>
+  <text x="780" y="244" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">validate · budget</text>
+  <text x="780" y="260" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">graphify_* · delegate</text>
+  <text x="780" y="276" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="10" text-anchor="middle">impact · recommend_model</text>
+</svg>

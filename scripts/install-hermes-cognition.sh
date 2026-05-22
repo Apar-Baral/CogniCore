@@ -79,43 +79,44 @@ cp "$PLUGIN_DIR/plugin.yaml" "$USER_PLUGIN_DIR/plugin.yaml"
 cp "$PLUGIN_DIR/hermes_user_plugin/__init__.py" "$USER_PLUGIN_DIR/__init__.py"
 echo "==> Registered user plugin at $USER_PLUGIN_DIR"
 
+export COGNITION_REPO_ROOT="$REPO_ROOT"
 "$PY" <<'PY'
+import os
 import sys
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:
-    print("WARN: PyYAML missing; add cognition to ~/.hermes/config.yaml manually", file=sys.stderr)
+cfg_path = Path.home() / ".hermes" / "config.yaml"
+example = Path(os.environ["COGNITION_REPO_ROOT"]) / "config" / "cognition.example.yaml"
+cfg_path.parent.mkdir(parents=True, exist_ok=True)
+text = cfg_path.read_text(encoding="utf-8") if cfg_path.is_file() else ""
+
+if "cognition:" in text:
+    print(f"==> {cfg_path} already has cognition block")
     sys.exit(0)
 
-cfg_path = Path.home() / ".hermes" / "config.yaml"
-cfg_path.parent.mkdir(parents=True, exist_ok=True)
-cfg = {}
-if cfg_path.is_file():
-    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
-if not isinstance(cfg, dict):
-    cfg = {}
+snippet = example.read_text(encoding="utf-8") if example.is_file() else ""
+if not snippet.strip():
+    print("WARN: merge config/cognition.example.yaml into ~/.hermes/config.yaml manually", file=sys.stderr)
+    sys.exit(0)
 
-plugins = cfg.setdefault("plugins", {})
-if not isinstance(plugins, dict):
-    plugins = {}
-    cfg["plugins"] = plugins
-enabled = plugins.setdefault("enabled", [])
-if not isinstance(enabled, list):
-    enabled = []
-    plugins["enabled"] = enabled
-if "cognition" not in enabled:
-    enabled.append("cognition")
+lines = snippet.splitlines()
+cog_block = "\n".join(lines[7:]) if len(lines) > 7 else snippet
+plugins_block = "\n".join(lines[:7])
 
-cog = cfg.setdefault("cognition", {})
-if not isinstance(cog, dict):
-    cog = {}
-    cfg["cognition"] = cog
-cog["enabled"] = True
+backup = cfg_path.with_suffix(".yaml.bak")
+if cfg_path.is_file() and not backup.is_file():
+    backup.write_text(text, encoding="utf-8")
 
-cfg_path.write_text(yaml.safe_dump(cfg, default_flow_style=False, sort_keys=False), encoding="utf-8")
-print(f"==> Updated {cfg_path} (plugins.enabled includes cognition)")
+to_append = plugins_block if "plugins:" not in text else cog_block
+with cfg_path.open("a", encoding="utf-8") as f:
+    f.write("\n\n# --- CogniCore (install-hermes-cognition.sh) ---\n")
+    f.write(to_append)
+    if "plugins:" in text and "- cognition" not in text:
+        f.write("\n# Add '- cognition' under your existing plugins.enabled list\n")
+print(f"==> Appended CogniCore config to {cfg_path}")
+if "plugins:" in text and "- cognition" not in text:
+    print("    ACTION: add '- cognition' under plugins.enabled in config.yaml")
+print("    Backup:", backup if backup.is_file() else "(none)")
 PY
 
 cat <<'EOF'
