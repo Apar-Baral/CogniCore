@@ -1,4 +1,4 @@
-"""``hermes cognition`` CLI subcommands."""
+"""``hermes-cognition`` CLI subcommands."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def run_cli(args: list[str]) -> int:
         if cmd == "plan":
             goal = " ".join(args[1:]) if len(args) > 1 else ""
             if not goal:
-                print("Usage: hermes cognition plan <goal>")
+                print("Usage: hermes-cognition plan <goal>")
                 return 1
             print(handlers.cognition_plan({"goal": goal}))
             return 0
@@ -73,7 +73,7 @@ def run_cli(args: list[str]) -> int:
             if sub == "navigate":
                 task = " ".join(args[2:]) if len(args) > 2 else ""
                 if not task:
-                    print("Usage: hermes cognition graphify navigate <task>")
+                    print("Usage: hermes-cognition graphify navigate <task>")
                     return 1
                 import json
 
@@ -99,54 +99,38 @@ def run_cli(args: list[str]) -> int:
 
 
 def _doctor() -> int:
-    ok = True
-    external = False
-    try:
-        import cognition_engine  # noqa: F401
-
-        print("OK: cognition-engine package (PyPI / external)")
-        external = True
-    except ImportError:
-        try:
-            import src.facade  # noqa: F401
-
-            print("OK: cognition-engine source (COGNITION_ENGINE_PATH)")
-            external = True
-        except ImportError:
-            print("OK: using CogniCore bundled engine (no external CE required)")
-
     try:
         f = CognitionBridge.get().facade()
-        engine = getattr(f, "engine_source", "external" if external else "unknown")
+        engine = getattr(f, "engine_source", "cognicore-bundled")
+        print("OK: CogniCore built-in cognition engine")
         print(f"OK: active engine: {engine}")
         print(f"OK: project root {f.root}")
         print(f"    cognition dir {f.cognition_dir}")
         print(f"    initialized {f.is_initialized()}")
+        return 0
     except Exception as exc:
-        print(f"WARN: facade {exc}")
-        ok = False
-
-    return 0 if ok else 1
+        print(f"FAIL: {exc}")
+        return 1
 
 
 def main() -> None:
-    """Console entry: ``hermes-cognition`` (use when ``hermes cognition`` is unavailable)."""
+    """Console entry: ``hermes-cognition``."""
     raise SystemExit(run_cli(sys.argv[1:]))
 
 
 def _print_help() -> None:
     print(
-        """Hermes Cognition Engine commands:
-  hermes cognition doctor          Check install
-  hermes cognition init [--reinit] Initialize .cognition/
-  hermes cognition plan <goal>     Generate master plan
-  hermes cognition start [task]    Start CE session + bootstrap
-  hermes cognition end             End session + insights
-  hermes cognition status [--detailed] [--phase=ID]
-  hermes cognition register-project  Add to global registry
-  hermes cognition suggest-plan <goal>  Hints from past projects
-  hermes cognition graphify index       Build project graph
-  hermes cognition graphify navigate <task>  Token-optimized file plan
-  hermes cognition graphify status      Graph + access stats
+        """Hermes Cognition (CogniCore) commands:
+  hermes-cognition doctor          Check install
+  hermes-cognition init [--reinit] Initialize .cognition/
+  hermes-cognition plan <goal>     Generate master plan
+  hermes-cognition start [task]    Start session + bootstrap
+  hermes-cognition end             End session + insights
+  hermes-cognition status [--detailed] [--phase=ID]
+  hermes-cognition register-project  Add to global registry
+  hermes-cognition suggest-plan <goal>  Hints from past projects
+  hermes-cognition graphify index       Build project graph
+  hermes-cognition graphify navigate <task>  Token-optimized file plan
+  hermes-cognition graphify status      Graph + access stats
 """
     )

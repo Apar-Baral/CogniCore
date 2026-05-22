@@ -1,7 +1,8 @@
 # CogniCore — How to Use Every Feature
 
-Step-by-step guide for **Hermes Agent + CogniCore + Cognition Engine**.  
-Spec reference: [Features.txt](../Features.txt) (54 features).
+Step-by-step guide for **Hermes Agent + CogniCore** (self-contained plugin).  
+Spec reference: [Features.txt](../Features.txt) (54 features).  
+Plugin details: [PLUGIN.md](PLUGIN.md).
 
 ---
 
@@ -11,12 +12,9 @@ Spec reference: [Features.txt](../Features.txt) (54 features).
 |-------------|--------|
 | Hermes installed | `hermes --version` |
 | CogniCore installed | `bash scripts/install-hermes-cognition.sh` |
-| Engine | `hermes-cognition doctor` → `cognicore-bundled` or `external` |
-| Cognition Engine path | Optional: `COGNITION_ENGINE_PATH` for full CE |
+| Engine | `hermes-cognition doctor` → `cognicore-bundled` |
 | Plugin enabled | `hermes plugins list` → cognition **enabled** |
-| CLI on PATH | `hermes-cognition doctor` |
-
-See [COGNITION_ENGINE.md](COGNITION_ENGINE.md) for bundled vs external.
+| CLI on PATH | `~/.hermes/hermes-agent/venv/bin/hermes-cognition` |
 
 **Use `hermes-cognition`** when `hermes cognition` is not in `hermes --help`.
 
@@ -30,9 +28,7 @@ See [COGNITION_ENGINE.md](COGNITION_ENGINE.md) for bundled vs external.
 
 ```powershell
 git clone https://github.com/Apar-Baral/CogniCore.git
-git clone https://github.com/Apar-Baral/CognitionEngine.git
 cd CogniCore
-$env:COGNITION_ENGINE_PATH = "$HOME\CognitionEngine\packages\cognition-engine"
 .\scripts\install-hermes-cognition.ps1
 ```
 

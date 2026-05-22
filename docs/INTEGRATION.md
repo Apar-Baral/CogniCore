@@ -1,12 +1,12 @@
-# Hermes + Cognition Engine Integration
+# Hermes + CogniCore Integration
 
-This project ships **hermes-cognition**, a Hermes Agent plugin that wraps the Cognition Engine library (54 features from [Features.txt](../Features.txt)).
+This project ships **hermes-cognition**, a self-contained Hermes Agent plugin (54 features from [Features.txt](../Features.txt)).
 
 ## Architecture
 
 - **Hermes** provides the agent loop, tools, gateway, and `delegate_task`.
-- **cognition-engine** provides DNA, shield, budget, bootstrap, planning, visualization, optimizer, transfer, and orchestration.
-- **hermes-cognition** connects them via plugin hooks and tools.
+- **hermes-cognition** provides DNA, shield, budget, bootstrap, planning, Graphify, and hooks via the built-in engine under `hermes_cognition/bundled/`.
+- **CognitionEngine** is a separate repository and is **not** required.
 
 Project data lives at:
 
@@ -20,15 +20,16 @@ Global cross-project registry: `~/.cognition/projects/`
 ### Windows
 
 ```powershell
-cd "e:\MAJOR PROJECT - HERMES WITH COGNITION"
-$env:COGNITION_ENGINE_PATH = "E:\Dream - Cognition Engine\packages\cognition-engine"
+git clone https://github.com/Apar-Baral/CogniCore.git
+cd CogniCore
 .\scripts\install-hermes-cognition.ps1
 ```
 
 ### Linux / WSL
 
 ```bash
-export COGNITION_ENGINE_PATH="/path/to/CognitionEngine/packages/cognition-engine"
+git clone https://github.com/Apar-Baral/CogniCore.git
+cd CogniCore
 bash scripts/install-hermes-cognition.sh
 ```
 

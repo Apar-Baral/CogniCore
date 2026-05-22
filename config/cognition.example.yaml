@@ -1,5 +1,4 @@
-# Merge into Hermes config: %LOCALAPPDATA%\hermes\config.yaml (Windows)
-# or ~/.hermes/config.yaml (Linux / VMware guest)
+# Merge into ~/.hermes/config.yaml (Linux) or %LOCALAPPDATA%\hermes\config.yaml (Windows)
 
 plugins:
   enabled:
@@ -7,9 +6,6 @@ plugins:
 
 cognition:
   enabled: true
-  # Engine: auto = external CE if installed, else bundled (built into CogniCore)
-  # bundled = always use built-in | external = require CognitionEngine repo
-  engine_mode: auto
   data_dir: auto
   migrate_legacy: true
   shield:

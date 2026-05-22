@@ -1,7 +1,4 @@
 # Install hermes-cognition into the Hermes Agent venv (Windows).
-# Usage: .\scripts\install-hermes-cognition.ps1
-# Optional: $env:COGNITION_ENGINE_PATH = "E:\Dream - Cognition Engine\packages\cognition-engine"
-
 $ErrorActionPreference = "Stop"
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -18,56 +15,15 @@ if (-not (Test-Path $HermesExe)) {
 
 $VenvRoot = Split-Path (Split-Path $HermesExe -Parent) -Parent
 $VenvPython = Join-Path $VenvRoot "Scripts\python.exe"
-if (-not (Test-Path $VenvPython)) {
-    Write-Error "Hermes venv python not found at $VenvPython"
-}
-
 Write-Host "==> Hermes python: $VenvPython"
 
-$CePath = $env:COGNITION_ENGINE_PATH
-if (-not $CePath) {
-    $candidates = @(
-        (Join-Path $RepoRoot "..\CognitionEngine\packages\cognition-engine"),
-        (Join-Path $env:USERPROFILE "CognitionEngine\packages\cognition-engine"),
-        "E:\Dream - Cognition Engine\packages\cognition-engine"
-    )
-    foreach ($c in $candidates) {
-        if (Test-Path (Join-Path $c "pyproject.toml")) {
-            $CePath = $c
-            break
-        }
-    }
-}
-if (-not $CePath) {
-    Write-Host "==> Cloning CognitionEngine (required dependency)..."
-    $cloneRoot = Join-Path $env:USERPROFILE "CognitionEngine"
-    if (-not (Test-Path (Join-Path $cloneRoot ".git"))) {
-        git clone https://github.com/Apar-Baral/CognitionEngine.git $cloneRoot
-    }
-    $CePath = Join-Path $cloneRoot "packages\cognition-engine"
-}
-
-$pipCheck = & $VenvPython -m pip --version 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "==> Bootstrapping pip via ensurepip"
-    & $VenvPython -m ensurepip --upgrade
-}
 & $VenvPython -m pip install -U pip wheel setuptools
-
-if ($CePath -and (Test-Path (Join-Path $CePath "pyproject.toml"))) {
-    Write-Host "==> Installing cognition-engine editable from $CePath (optional full engine)"
-    & $VenvPython -m pip install -e $CePath
-} else {
-    Write-Host "==> Skipping external cognition-engine (CogniCore bundled engine is included)"
-    Write-Host "    Optional: pip install 'hermes-cognition[full]' or set COGNITION_ENGINE_PATH"
-}
-
-Write-Host "==> Installing hermes-cognition from $HermesPlugin"
+Write-Host "==> Installing hermes-cognition (CogniCore — self-contained)"
 & $VenvPython -m pip install -e $HermesPlugin
 
-Write-Host "==> Doctor"
-& $VenvPython -m hermes_cognition.cli_standalone 2>$null
-if ($LASTEXITCODE -ne 0) {
+$HermesBin = Split-Path $VenvPython -Parent
+$Cli = Join-Path $HermesBin "hermes-cognition.exe"
+if (Test-Path $Cli) { & $Cli doctor } else {
     & $VenvPython -c "from hermes_cognition.cli_commands import _doctor; raise SystemExit(_doctor())"
 }
 
@@ -76,31 +32,23 @@ $UserPluginDir = Join-Path $HermesHome "plugins\cognition"
 New-Item -ItemType Directory -Force -Path $UserPluginDir | Out-Null
 Copy-Item (Join-Path $HermesPlugin "plugin.yaml") (Join-Path $UserPluginDir "plugin.yaml") -Force
 Copy-Item (Join-Path $HermesPlugin "hermes_user_plugin\__init__.py") (Join-Path $UserPluginDir "__init__.py") -Force
-Write-Host "==> Registered user plugin at $UserPluginDir"
 
 $ExampleYaml = Join-Path $RepoRoot "config\cognition.example.yaml"
 & $VenvPython -c @"
-import sys
 from pathlib import Path
 cfg_path = Path.home() / '.hermes' / 'config.yaml'
 example = Path(r'$ExampleYaml')
-cfg_path.parent.mkdir(parents=True, exist_ok=True)
 text = cfg_path.read_text(encoding='utf-8') if cfg_path.is_file() else ''
 if 'cognition:' in text:
-    print(f'==> {cfg_path} already mentions cognition')
-    sys.exit(0)
-snippet = example.read_text(encoding='utf-8') if example.is_file() else ''
-backup = cfg_path.with_suffix('.yaml.bak')
-if cfg_path.is_file() and not backup.is_file():
-    backup.write_text(text, encoding='utf-8')
-with cfg_path.open('a', encoding='utf-8') as f:
-    f.write('\n\n# --- CogniCore (install-hermes-cognition.ps1) ---\n')
-    f.write(snippet)
-print(f'==> Appended cognition block to {cfg_path}')
+    print('config already has cognition')
+else:
+    lines = example.read_text(encoding='utf-8').splitlines()
+    block = '\n'.join(lines[7:]) if 'plugins:' in text else example.read_text(encoding='utf-8')
+    with cfg_path.open('a', encoding='utf-8') as f:
+        f.write('\n\n# --- CogniCore ---\n' + block)
+    print('Updated', cfg_path)
 "@
 
-$HermesBin = Split-Path $VenvPython -Parent
 Write-Host ""
-Write-Host "Done. Hermes CLI folder: $HermesBin"
-Write-Host "  hermes-cognition: $(Join-Path $HermesBin 'hermes-cognition.exe')"
-Write-Host "  Add to PATH or run with full path above."
+Write-Host "Done. CLI folder: $HermesBin"
+Write-Host "  $(Join-Path $HermesBin 'hermes-cognition.exe')"

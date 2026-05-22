@@ -124,10 +124,7 @@ class CognitionBridge:
 
     def ensure_budget_enforcer(self) -> Any:
         if self._budget_enforcer is None:
-            try:
-                from src.proxy.budget_enforcer import BudgetEnforcer
-            except ImportError:
-                from hermes_cognition.bundled.budget import BudgetEnforcer
+            from hermes_cognition.bundled.budget import BudgetEnforcer
 
             self._budget_enforcer = BudgetEnforcer(self.session_budget_limit())
         return self._budget_enforcer
@@ -272,10 +269,7 @@ class CognitionBridge:
             return None
         enforcer = self.ensure_budget_enforcer()
         check = enforcer.check_budget()
-        try:
-            from src.core.constants import BudgetZone, budget_zone_for_ratio
-        except ImportError:
-            from hermes_cognition.bundled.constants import BudgetZone, budget_zone_for_ratio
+        from hermes_cognition.bundled.constants import BudgetZone, budget_zone_for_ratio
 
         ratio = enforcer.tokens_used / enforcer.budget_limit if enforcer.budget_limit else 0
         zone = budget_zone_for_ratio(ratio)

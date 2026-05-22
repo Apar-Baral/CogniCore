@@ -14,8 +14,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-full = ["cognition-engine>=0.3.54"]
-semantic = ["cognition-engine[semantic]"]
 dev = ["pytest>=8.2.0"]
 
 [project.entry-points."hermes_agent.plugins"]

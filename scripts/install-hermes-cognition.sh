@@ -31,55 +31,19 @@ find_hermes_python() {
 PY="$(find_hermes_python)" || { echo "ERROR: hermes venv python not found"; exit 1; }
 echo "==> Hermes python: $PY"
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CE_PATH="${COGNITION_ENGINE_PATH:-}"
-for candidate in \
-  "$REPO_ROOT/../CognitionEngine/packages/cognition-engine" \
-  "$HOME/Desktop/CognitionEngine/packages/cognition-engine" \
-  "$HOME/CognitionEngine/packages/cognition-engine" \
-  "/mnt/e/Dream - Cognition Engine/packages/cognition-engine"; do
-  if [[ -z "$CE_PATH" && -f "$candidate/pyproject.toml" ]]; then
-    CE_PATH="$candidate"
-  fi
-done
-if [[ -z "$CE_PATH" || ! -f "$CE_PATH/pyproject.toml" ]]; then
-  echo "==> Cloning CognitionEngine (required dependency)..."
-  CLONE_ROOT="${HOME}/CognitionEngine"
-  if [[ ! -d "$CLONE_ROOT/.git" ]]; then
-    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
-      git clone https://github.com/Apar-Baral/CognitionEngine.git "$CLONE_ROOT"
-  fi
-  CE_PATH="$CLONE_ROOT/packages/cognition-engine"
-fi
-
 if ! "$PY" -m pip --version >/dev/null 2>&1; then
   echo "==> Bootstrapping pip via ensurepip"
   "$PY" -m ensurepip --upgrade
 fi
 "$PY" -m pip install -U pip wheel setuptools
 
-if [[ -n "$CE_PATH" && -f "$CE_PATH/pyproject.toml" ]]; then
-  echo "==> Installing cognition-engine editable from $CE_PATH (optional full engine)"
-  "$PY" -m pip install -e "$CE_PATH" || echo "WARN: CE install failed — bundled engine still works"
-else
-  echo "==> Skipping external cognition-engine (CogniCore bundled engine is included)"
-  echo "    Optional: pip install 'hermes-cognition[full]' or set COGNITION_ENGINE_PATH"
-fi
-
-echo "==> Installing hermes-cognition"
+echo "==> Installing hermes-cognition (CogniCore — self-contained plugin)"
 "$PY" -m pip install -e "$PLUGIN_DIR"
 
 HERMES_BIN="$(dirname "$PY")"
 CLI_COGNITION="$HERMES_BIN/hermes-cognition"
-CLI_DOCTOR="$HERMES_BIN/hermes-cognition-doctor"
-if [[ ! -x "$CLI_COGNITION" ]]; then
-  echo "WARN: $CLI_COGNITION missing — reinstall with: $PY -m pip install -e $PLUGIN_DIR"
-else
-  echo "==> CLI installed: $CLI_COGNITION"
-fi
-
-echo "==> Doctor"
 if [[ -x "$CLI_COGNITION" ]]; then
+  echo "==> CLI: $CLI_COGNITION"
   "$CLI_COGNITION" doctor
 else
   "$PY" -c "from hermes_cognition.cli_commands import _doctor; raise SystemExit(_doctor())"
@@ -109,42 +73,30 @@ if "cognition:" in text:
 
 snippet = example.read_text(encoding="utf-8") if example.is_file() else ""
 if not snippet.strip():
-    print("WARN: merge config/cognition.example.yaml into ~/.hermes/config.yaml manually", file=sys.stderr)
+    print("WARN: merge config/cognition.example.yaml manually", file=sys.stderr)
     sys.exit(0)
 
 lines = snippet.splitlines()
 cog_block = "\n".join(lines[7:]) if len(lines) > 7 else snippet
 plugins_block = "\n".join(lines[:7])
-
 backup = cfg_path.with_suffix(".yaml.bak")
 if cfg_path.is_file() and not backup.is_file():
     backup.write_text(text, encoding="utf-8")
-
 to_append = plugins_block if "plugins:" not in text else cog_block
 with cfg_path.open("a", encoding="utf-8") as f:
-    f.write("\n\n# --- CogniCore (install-hermes-cognition.sh) ---\n")
+    f.write("\n\n# --- CogniCore ---\n")
     f.write(to_append)
-    if "plugins:" in text and "- cognition" not in text:
-        f.write("\n# Add '- cognition' under your existing plugins.enabled list\n")
-print(f"==> Appended CogniCore config to {cfg_path}")
-if "plugins:" in text and "- cognition" not in text:
-    print("    ACTION: add '- cognition' under plugins.enabled in config.yaml")
-print("    Backup:", backup if backup.is_file() else "(none)")
+print(f"==> Updated {cfg_path}")
 PY
 
 cat <<EOF
 
-Done. Hermes tools are in: $HERMES_BIN
-  Add to PATH (bash/zsh):
-    export PATH="$HERMES_BIN:\$PATH"
+Done. Add to PATH:
+  export PATH="$HERMES_BIN:\$PATH"
 
-  Then run:
-    hermes-cognition doctor
-    hermes-cognition init
-    hermes plugins list
-
-  Or use full paths without PATH:
-    $CLI_COGNITION doctor
-    $CLI_DOCTOR
+Commands:
+  hermes-cognition doctor
+  hermes plugins list
+  hermes -t terminal,file,web
 
 EOF

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xss-finder"
+version = "0.1.0"
+description = "Authorized CLI reflected XSS scanner with scope and safety controls"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[project.scripts]
+xss-finder = "xss_finder.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["xss_finder*"]
