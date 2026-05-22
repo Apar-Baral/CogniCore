@@ -1,6 +1,9 @@
 # hermes-cognition
 
-Hermes Agent plugin integrating [Cognition Engine](https://github.com/Apar-Baral/CognitionEngine) (54-feature dev orchestrator).
+Hermes Agent plugin — **CogniCore** (54-feature dev orchestrator, self-contained).
+
+- **What we build:** [../../docs/VISION.md](../../docs/VISION.md)  
+- **Quick start:** [../../docs/GETTING_STARTED.md](../../docs/GETTING_STARTED.md)
 
 ## Install
 
@@ -31,9 +34,10 @@ cognition:
 
 ```bash
 cd your-project
-hermes cognition init
-hermes cognition plan "Build my application"
-hermes
+hermes-cognition init
+hermes-cognition plan "Build my application"    # goal-driven plan, not hardcoded
+hermes-cognition status --detailed              # see phases
+hermes -t terminal,file,web
 ```
 
-See [docs/INTEGRATION.md](../../docs/INTEGRATION.md) for full details.
+See [docs/GETTING_STARTED.md](../../docs/GETTING_STARTED.md) and [docs/VISION.md](../../docs/VISION.md).

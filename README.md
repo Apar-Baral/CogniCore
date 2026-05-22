@@ -16,15 +16,33 @@
 </p>
 
 <p align="center">
+  <a href="docs/VISION.md"><b>What We Build</b></a> ·
+  <a href="docs/GETTING_STARTED.md"><b>Start Here (5 min)</b></a> ·
   <a href="docs/USER_GUIDE.md"><b>User Guide</b></a> ·
-  <a href="docs/PLUGIN.md"><b>What the Plugin Does</b></a> ·
-  <a href="docs/FEATURE_MAP.md"><b>54 Features</b></a> ·
-  <a href="docs/TESTING.md"><b>Testing</b></a>
+  <a href="docs/PLUGIN.md"><b>Plugin Details</b></a> ·
+  <a href="docs/FEATURE_MAP.md"><b>54 Features</b></a>
 </p>
 
 <p align="center">
   Built by <a href="https://github.com/Apar-Baral"><b>Apar Baral</b></a>
 </p>
+
+---
+
+## What we want to build
+
+**CogniCore helps Hermes remember your project, plan from your goal, and code safely** — not replace the coder.
+
+| You do | CogniCore does | Hermes does |
+|--------|----------------|-------------|
+| `plan "Build my API with auth"` | Writes phases to `.cognition/` | — |
+| `status --detailed` | Shows your roadmap | — |
+| `hermes -t terminal,file,web` | Bootstrap, shield, budget, Graphify | Writes and runs code |
+
+Plans are **not hardcoded**: they come from **your goal string**.  
+The XSS “Phase 01” text in `examples/xss-finder` is only for that sample app.
+
+**New here?** Read **[docs/VISION.md](docs/VISION.md)** and **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)**.
 
 ---
 
@@ -127,11 +145,10 @@ Slash commands in chat: `/cognition status`, `/cognition plan …`, `/cognition 
 
 ---
 
-## Example: XSS scanner
+## Example project (not the core product)
 
-Reference implementation with Phase 01 safety controls:
-
-**[examples/xss-finder/](examples/xss-finder/)**
+**[examples/xss-finder/](examples/xss-finder/)** — sample authorized XSS CLI used to demo CogniCore on a security tool.  
+Your real workflow: use CogniCore on **your own repo** with **your own** `plan "..."` goal.
 
 ```bash
 cd examples/xss-finder && pip install -e .
@@ -144,7 +161,10 @@ xss-finder scan 'https://testphp.vulnweb.com/search.php?test=1' --i-agree --allo
 
 | Doc | Content |
 |-----|---------|
-| [docs/PLUGIN.md](docs/PLUGIN.md) | **Detailed plugin behavior** (tools, hooks, data) |
+| [PROJECT.md](PROJECT.md) | One-page summary for GitHub visitors |
+| [docs/VISION.md](docs/VISION.md) | **Mission, goals, what we are / are not building** |
+| [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) | **5-minute onboarding** |
+| [docs/PLUGIN.md](docs/PLUGIN.md) | Detailed plugin behavior (tools, hooks, data) |
 | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | Step-by-step usage |
 | [docs/FEATURE_MAP.md](docs/FEATURE_MAP.md) | All 54 features (table) |
 | [docs/TESTING.md](docs/TESTING.md) | Test checklist |

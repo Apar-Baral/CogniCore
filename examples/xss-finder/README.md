@@ -1,6 +1,10 @@
-# XSS Finder (example)
+# XSS Finder (example only)
 
-Authorized reflected XSS CLI with **Phase 01 — scope & safety controls**.
+> **This is not CogniCore itself.** CogniCore is the Hermes plugin in the repo root.  
+> This folder is a **sample application** to demonstrate using CogniCore on a security CLI.  
+> Your project: use `hermes-cognition plan "your goal"` in **your own repo**.
+
+Authorized reflected XSS CLI with **Phase 01 — scope & safety controls** (this example’s first phase).
 
 ## Legal
 
