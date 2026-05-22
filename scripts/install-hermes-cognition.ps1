@@ -55,11 +55,11 @@ if ($LASTEXITCODE -ne 0) {
 & $VenvPython -m pip install -U pip wheel setuptools
 
 if ($CePath -and (Test-Path (Join-Path $CePath "pyproject.toml"))) {
-    Write-Host "==> Installing cognition-engine editable from $CePath"
+    Write-Host "==> Installing cognition-engine editable from $CePath (optional full engine)"
     & $VenvPython -m pip install -e $CePath
 } else {
-    Write-Host "==> Installing cognition-engine from PyPI (if published)"
-    & $VenvPython -m pip install "cognition-engine>=0.3.54"
+    Write-Host "==> Skipping external cognition-engine (CogniCore bundled engine is included)"
+    Write-Host "    Optional: pip install 'hermes-cognition[full]' or set COGNITION_ENGINE_PATH"
 }
 
 Write-Host "==> Installing hermes-cognition from $HermesPlugin"

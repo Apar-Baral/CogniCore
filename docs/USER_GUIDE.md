@@ -11,9 +11,12 @@ Spec reference: [Features.txt](../Features.txt) (54 features).
 |-------------|--------|
 | Hermes installed | `hermes --version` |
 | CogniCore installed | `bash scripts/install-hermes-cognition.sh` |
-| Cognition Engine path | `export COGNITION_ENGINE_PATH=.../packages/cognition-engine` |
+| Engine | `hermes-cognition doctor` → `cognicore-bundled` or `external` |
+| Cognition Engine path | Optional: `COGNITION_ENGINE_PATH` for full CE |
 | Plugin enabled | `hermes plugins list` → cognition **enabled** |
 | CLI on PATH | `hermes-cognition doctor` |
+
+See [COGNITION_ENGINE.md](COGNITION_ENGINE.md) for bundled vs external.
 
 **Use `hermes-cognition`** when `hermes cognition` is not in `hermes --help`.
 

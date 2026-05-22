@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="docs/assets/og-banner.png" alt="CogniCore — Hermes Agent + Cognition Engine" width="100%"/>
+</p>
+
+<p align="center">
   <img src="docs/assets/cognicore-architecture.svg" alt="CogniCore architecture" width="720"/>
 </p>
 
@@ -52,7 +56,7 @@
 flowchart TB
   U[You] --> H[Hermes Agent]
   H --> P[hermes-cognition plugin]
-  P --> CE[cognition-engine]
+  P --> CE[bundled or external CE]
   CE --> D[".cognition/ per project"]
   CE --> G["~/.cognition/ registry"]
   P --> HK[Hooks: shield · budget · bootstrap]
@@ -63,7 +67,9 @@ flowchart TB
 |-------|------|------|
 | Agent | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | LLM loop, tools, gateway |
 | Plugin | **CogniCore** (this repo) | Hooks, tools, CLI, Graphify |
-| Library | [CognitionEngine](https://github.com/Apar-Baral/CognitionEngine) | DNA, shield, budget, planning |
+| Engine | Bundled in plugin **or** [CognitionEngine](https://github.com/Apar-Baral/CognitionEngine) (optional) | DNA, shield, budget, planning |
+
+**No external CE required** — CogniCore ships a bundled engine. See [docs/COGNITION_ENGINE.md](docs/COGNITION_ENGINE.md).
 
 ---
 
@@ -72,15 +78,16 @@ flowchart TB
 ### 1. Prerequisites
 
 - [Hermes Agent](https://hermes-agent.nousresearch.com/docs/getting-started/quickstart) installed  
-- [Cognition Engine](https://github.com/Apar-Baral/CognitionEngine) cloned  
+- [Cognition Engine](https://github.com/Apar-Baral/CognitionEngine) — **optional** (bundled engine included)
 
 ### 2. Install (Linux / Kali / WSL)
 
 ```bash
 git clone https://github.com/Apar-Baral/CogniCore.git
-git clone https://github.com/Apar-Baral/CognitionEngine.git
 cd CogniCore
-export COGNITION_ENGINE_PATH="$HOME/CognitionEngine/packages/cognition-engine"
+# Optional full engine:
+# git clone https://github.com/Apar-Baral/CognitionEngine.git
+# export COGNITION_ENGINE_PATH="$HOME/CognitionEngine/packages/cognition-engine"
 bash scripts/install-hermes-cognition.sh
 export PATH="$HOME/.hermes/hermes-agent/venv/bin:$PATH"
 hermes-cognition doctor
@@ -120,7 +127,9 @@ Inside Hermes: `/cognition status`, `/cognition plan <goal>`, `/cognition end`.
 |-------|----------------|
 | **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)** | **How to use every feature** — CLI, tools, hooks, clusters A–I, Graphify |
 | **[docs/TESTING.md](docs/TESTING.md)** | **Test checklist** — verify install and all clusters |
+| **[docs/COGNITION_ENGINE.md](docs/COGNITION_ENGINE.md)** | **Bundled vs external** engine, roadmap, optional CE |
 | **[docs/INTEGRATION.md](docs/INTEGRATION.md)** | Config, architecture, troubleshooting |
+| **[docs/SOCIAL_PREVIEW.md](docs/SOCIAL_PREVIEW.md)** | GitHub / social preview image setup |
 | **[Features.txt](Features.txt)** | Full 54-feature specification |
 | **[config/cognition.example.yaml](config/cognition.example.yaml)** | Copy into `~/.hermes/config.yaml` |
 

@@ -10,11 +10,11 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = [
-    "cognition-engine>=0.3.54",
     "pyyaml>=6.0.0",
 ]
 
 [project.optional-dependencies]
+full = ["cognition-engine>=0.3.54"]
 semantic = ["cognition-engine[semantic]"]
 dev = ["pytest>=8.2.0"]
 

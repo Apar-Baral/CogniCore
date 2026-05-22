@@ -132,12 +132,24 @@ def cognition_budget(args: dict, **kwargs: Any) -> str:
 
 def cognition_impact(args: dict, **kwargs: Any) -> str:
     try:
-        from src.navigator.complexity_forecaster import ComplexityForecaster
-
         f = _facade()
         f.ctx.require_initialized()
-        cf = ComplexityForecaster(f.ctx.query, f.root)
-        impact = cf.estimate_feature_impact(args.get("feature_description", ""))
+        desc = args.get("feature_description", "") or ""
+        try:
+            from src.navigator.complexity_forecaster import ComplexityForecaster
+
+            cf = ComplexityForecaster(f.ctx.query, f.root)
+            impact = cf.estimate_feature_impact(desc)
+        except ImportError:
+            phases = len(f.ctx.query.refresh().get("master_plan", {}).get("phase_sequence", []))
+            impact = {
+                "feature": desc[:200],
+                "disruption_score": min(1.0, 0.2 + phases * 0.02),
+                "phases_affected": max(1, phases // 4),
+                "rework_estimate": "low",
+                "engine": getattr(f, "engine_source", "external"),
+                "note": "bundled heuristic — install full CE for deep impact analysis",
+            }
         return json.dumps(impact)
     except Exception as e:
         return _json_err(str(e))
@@ -228,12 +240,22 @@ def cognition_recommend_model(args: dict, **kwargs: Any) -> str:
         budget_zone = check.get("zone", "green")
         route = router.route_task(task_complexity=complexity, budget_zone=budget_zone)
         model_id = route.model_id
-        pricing = f.ctx.model_registry().list_models()
-        compare = f.ctx.model_registry()
-        from src.models.pricing_tracker import PricingTracker
+        try:
+            from src.models.pricing_tracker import PricingTracker
 
-        tracker = PricingTracker(compare)
-        costs = tracker.compare_costs(1000, 500, [model_id] if model_id else None)
-        return _json_ok(recommended_model=model_id, complexity=complexity, costs=costs)
+            tracker = PricingTracker(f.ctx.model_registry())
+            costs = tracker.compare_costs(1000, 500, [model_id] if model_id else None)
+        except ImportError:
+            from hermes_cognition.bundled.router import PricingTracker
+
+            costs = PricingTracker(f.ctx.model_registry()).compare_costs(
+                1000, 500, [model_id] if model_id else None
+            )
+        return _json_ok(
+            recommended_model=model_id,
+            complexity=complexity,
+            costs=costs,
+            engine=getattr(f, "engine_source", "external"),
+        )
     except Exception as e:
         return _json_err(str(e))

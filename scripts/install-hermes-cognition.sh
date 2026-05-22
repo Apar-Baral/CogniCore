@@ -59,11 +59,11 @@ fi
 "$PY" -m pip install -U pip wheel setuptools
 
 if [[ -n "$CE_PATH" && -f "$CE_PATH/pyproject.toml" ]]; then
-  echo "==> Installing cognition-engine editable from $CE_PATH"
-  "$PY" -m pip install -e "$CE_PATH"
+  echo "==> Installing cognition-engine editable from $CE_PATH (optional full engine)"
+  "$PY" -m pip install -e "$CE_PATH" || echo "WARN: CE install failed — bundled engine still works"
 else
-  echo "==> Installing cognition-engine from PyPI"
-  "$PY" -m pip install "cognition-engine>=0.3.54"
+  echo "==> Skipping external cognition-engine (CogniCore bundled engine is included)"
+  echo "    Optional: pip install 'hermes-cognition[full]' or set COGNITION_ENGINE_PATH"
 fi
 
 echo "==> Installing hermes-cognition"

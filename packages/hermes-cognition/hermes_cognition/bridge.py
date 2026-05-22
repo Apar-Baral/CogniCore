@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from hermes_cognition.config import get_nested, load_cognition_config
+from hermes_cognition.engine_loader import resolve_facade
 from hermes_cognition.paths import resolve_cognition_dir, resolve_project_root
 
 logger = logging.getLogger(__name__)
@@ -66,14 +67,7 @@ class CognitionBridge:
 
     def facade(self) -> Any:
         if self._facade is None:
-            from src.facade import CognitionFacade
-
-            root = self.project_root
-            if self.data_mode == "hermes":
-                os_env = root
-            else:
-                os_env = root
-            self._facade = CognitionFacade(os_env)
+            self._facade = resolve_facade(self.project_root, self.cfg)
             if self.cfg.get("migrate_legacy", True):
                 try:
                     self._facade.migrate_legacy_data_dir()
@@ -130,7 +124,10 @@ class CognitionBridge:
 
     def ensure_budget_enforcer(self) -> Any:
         if self._budget_enforcer is None:
-            from src.proxy.budget_enforcer import BudgetEnforcer
+            try:
+                from src.proxy.budget_enforcer import BudgetEnforcer
+            except ImportError:
+                from hermes_cognition.bundled.budget import BudgetEnforcer
 
             self._budget_enforcer = BudgetEnforcer(self.session_budget_limit())
         return self._budget_enforcer
@@ -275,7 +272,10 @@ class CognitionBridge:
             return None
         enforcer = self.ensure_budget_enforcer()
         check = enforcer.check_budget()
-        from src.core.constants import BudgetZone, budget_zone_for_ratio
+        try:
+            from src.core.constants import BudgetZone, budget_zone_for_ratio
+        except ImportError:
+            from hermes_cognition.bundled.constants import BudgetZone, budget_zone_for_ratio
 
         ratio = enforcer.tokens_used / enforcer.budget_limit if enforcer.budget_limit else 0
         zone = budget_zone_for_ratio(ratio)

@@ -100,26 +100,31 @@ def run_cli(args: list[str]) -> int:
 
 def _doctor() -> int:
     ok = True
+    external = False
     try:
         import cognition_engine  # noqa: F401
+
+        print("OK: cognition-engine package (PyPI / external)")
+        external = True
     except ImportError:
         try:
             import src.facade  # noqa: F401
+
+            print("OK: cognition-engine source (COGNITION_ENGINE_PATH)")
+            external = True
         except ImportError:
-            print("FAIL: cognition-engine not installed (pip install cognition-engine)")
-            ok = False
-        else:
-            print("OK: cognition-engine (src) importable")
-    else:
-        print("OK: cognition-engine package")
+            print("OK: using CogniCore bundled engine (no external CE required)")
 
     try:
         f = CognitionBridge.get().facade()
+        engine = getattr(f, "engine_source", "external" if external else "unknown")
+        print(f"OK: active engine: {engine}")
         print(f"OK: project root {f.root}")
         print(f"    cognition dir {f.cognition_dir}")
         print(f"    initialized {f.is_initialized()}")
     except Exception as exc:
         print(f"WARN: facade {exc}")
+        ok = False
 
     return 0 if ok else 1
 

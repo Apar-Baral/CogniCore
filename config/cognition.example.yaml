@@ -7,6 +7,9 @@ plugins:
 
 cognition:
   enabled: true
+  # Engine: auto = external CE if installed, else bundled (built into CogniCore)
+  # bundled = always use built-in | external = require CognitionEngine repo
+  engine_mode: auto
   data_dir: auto
   migrate_legacy: true
   shield:
