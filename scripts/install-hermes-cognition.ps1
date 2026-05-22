@@ -99,5 +99,8 @@ with cfg_path.open('a', encoding='utf-8') as f:
 print(f'==> Appended cognition block to {cfg_path}')
 "@
 
+$HermesBin = Split-Path $VenvPython -Parent
 Write-Host ""
-Write-Host "Done. Run: hermes plugins list ; hermes cognition doctor"
+Write-Host "Done. Hermes CLI folder: $HermesBin"
+Write-Host "  hermes-cognition: $(Join-Path $HermesBin 'hermes-cognition.exe')"
+Write-Host "  Add to PATH or run with full path above."

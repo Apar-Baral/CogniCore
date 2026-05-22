@@ -69,8 +69,21 @@ fi
 echo "==> Installing hermes-cognition"
 "$PY" -m pip install -e "$PLUGIN_DIR"
 
+HERMES_BIN="$(dirname "$PY")"
+CLI_COGNITION="$HERMES_BIN/hermes-cognition"
+CLI_DOCTOR="$HERMES_BIN/hermes-cognition-doctor"
+if [[ ! -x "$CLI_COGNITION" ]]; then
+  echo "WARN: $CLI_COGNITION missing — reinstall with: $PY -m pip install -e $PLUGIN_DIR"
+else
+  echo "==> CLI installed: $CLI_COGNITION"
+fi
+
 echo "==> Doctor"
-"$PY" -c "from hermes_cognition.cli_commands import _doctor; raise SystemExit(_doctor())"
+if [[ -x "$CLI_COGNITION" ]]; then
+  "$CLI_COGNITION" doctor
+else
+  "$PY" -c "from hermes_cognition.cli_commands import _doctor; raise SystemExit(_doctor())"
+fi
 
 HERMES_PLUGINS_DIR="${HERMES_HOME:-$HOME/.hermes}/plugins"
 USER_PLUGIN_DIR="$HERMES_PLUGINS_DIR/cognition"
@@ -119,11 +132,19 @@ if "plugins:" in text and "- cognition" not in text:
 print("    Backup:", backup if backup.is_file() else "(none)")
 PY
 
-cat <<'EOF'
+cat <<EOF
 
-Done.
-  hermes plugins list
-  hermes plugins enable cognition   # should succeed now
-  hermes cognition doctor
+Done. Hermes tools are in: $HERMES_BIN
+  Add to PATH (bash/zsh):
+    export PATH="$HERMES_BIN:\$PATH"
+
+  Then run:
+    hermes-cognition doctor
+    hermes-cognition init
+    hermes plugins list
+
+  Or use full paths without PATH:
+    $CLI_COGNITION doctor
+    $CLI_DOCTOR
 
 EOF
