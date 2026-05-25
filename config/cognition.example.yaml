@@ -8,19 +8,24 @@ cognition:
   enabled: true
   data_dir: auto
   migrate_legacy: true
+  # Usability-first defaults — Hermes keeps coding; CogniCore advises unless you tighten this.
   shield:
-    mode: medium
-    block_writes: true
+    mode: syntax          # off | syntax (syntax errors only) | strict (import checks)
+    block_writes: false   # true blocks write_file/patch when shield fails
   budget:
-    zones: true
-    session_tokens: 200000
+    enabled: true
+    zones: false          # true injects yellow/red/wrap-up hints every LLM turn
+    enforce_tool_blocks: false  # true disables terminal/write at 100% budget
+    wrap_up_messages: false     # true appends "wrap up now" to assistant replies at 90%+
+    session_tokens: 500000
   bootstrap:
     inject_on_session_start: true
     max_tokens: 2000
   semantic_index: false
   graphify:
     enabled: true
-    auto_index: true
-    navigation_token_budget: 8000
+    inject_on_llm: false  # true adds navigation context on every turn (heavy)
+    auto_index: false     # true scans repo on each Hermes session start (slow)
+    navigation_token_budget: 4000
     max_files: 400
     block_rereads: false

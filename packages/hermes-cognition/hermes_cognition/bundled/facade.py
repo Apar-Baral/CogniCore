@@ -94,10 +94,11 @@ class BundledFacade:
         proposed_content: str,
         *,
         original_content: str = "",
+        mode: str = "syntax",
     ) -> dict[str, Any]:
         self.ctx.require_initialized()
         return self.ctx.validation_pipeline(index_codebase=False).validate_code_change(
-            file_path, original_content, proposed_content
+            file_path, original_content, proposed_content, mode=mode
         )
 
     def status_text(self, *, detailed: bool = False, phase_id: str | None = None) -> str:

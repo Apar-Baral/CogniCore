@@ -36,7 +36,7 @@ def pre_tool_call(tool_name: str = "", args: dict | None = None, **kwargs: Any) 
     block = bridge.pre_tool_shield(name, arguments)
     if block:
         return block
-    if _bridge().budget_enabled():
+    if _bridge().budget_blocks_tools():
         enforcer = _bridge().ensure_budget_enforcer()
         check = enforcer.check_budget()
         if not check.get("continue_session", True) and name in {"write_file", "patch", "terminal"}:
@@ -86,7 +86,10 @@ def pre_llm_call(
     ctx = bridge.pre_llm_context(is_first_turn=bool(is_first_turn or kwargs.get("is_first_turn")))
     if ctx:
         parts.append(ctx)
-    gfx = bridge.pre_llm_graphify_context(str(msg))
+    gfx = bridge.pre_llm_graphify_context(
+        str(msg),
+        is_first_turn=bool(is_first_turn or kwargs.get("is_first_turn")),
+    )
     if gfx:
         parts.append(gfx)
     budget = bridge.pre_llm_budget_check()

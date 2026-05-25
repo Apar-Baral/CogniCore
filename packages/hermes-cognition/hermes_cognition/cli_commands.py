@@ -100,17 +100,30 @@ def run_cli(args: list[str]) -> int:
 
 def _doctor() -> int:
     try:
-        f = CognitionBridge.get().facade()
+        bridge = CognitionBridge.get()
+        f = bridge.facade()
         engine = getattr(f, "engine_source", "cognicore-bundled")
         print("OK: CogniCore built-in cognition engine")
         print(f"OK: active engine: {engine}")
         print(f"OK: project root {f.root}")
         print(f"    cognition dir {f.cognition_dir}")
         print(f"    initialized {f.is_initialized()}")
+        _doctor_config_hints(bridge)
         return 0
     except Exception as exc:
         print(f"FAIL: {exc}")
         return 1
+
+
+def _doctor_config_hints(bridge: CognitionBridge) -> None:
+    if bridge.shield_blocks_writes() and bridge.shield_mode() == "strict":
+        print("WARN: shield blocks writes in strict mode — Hermes may stop editing files.")
+    if bridge.budget_blocks_tools():
+        print("WARN: budget.enforce_tool_blocks=true — tools disabled at 100% budget.")
+    if bridge.budget_zone_injections():
+        print("NOTE: budget.zones=true — budget hints injected every LLM turn.")
+    if bridge.graphify_inject_on_llm():
+        print("NOTE: graphify.inject_on_llm=true — large context added every turn.")
 
 
 def main() -> None:

@@ -160,8 +160,8 @@ Config:
 ```yaml
 cognition:
   shield:
-    mode: medium   # low | medium | high
-    block_writes: true
+    mode: syntax   # off | syntax | strict
+    block_writes: false   # true only if you want hard blocks
 ```
 
 In Hermes: try writing a file with `import fake_package_xyz`; or call `cognition_validate`.
@@ -173,11 +173,12 @@ Config:
 ```yaml
 cognition:
   budget:
-    zones: true
-    session_tokens: 200000
+    zones: false              # advisory hints; keep false for long coding sessions
+    enforce_tool_blocks: false
+    session_tokens: 500000
 ```
 
-In Hermes: `cognition_budget`; run a long session to see zone warnings and 90% wrap-up.
+In Hermes: `cognition_budget`. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if Hermes stops early.
 
 ### D — Planning (#24–28)
 
@@ -239,8 +240,9 @@ Config:
 cognition:
   graphify:
     enabled: true
-    auto_index: true
-    navigation_token_budget: 8000
+    inject_on_llm: false    # true = navigation on every turn (heavy)
+    auto_index: false       # run `hermes-cognition graphify index` manually
+    navigation_token_budget: 4000
     block_rereads: false
 ```
 

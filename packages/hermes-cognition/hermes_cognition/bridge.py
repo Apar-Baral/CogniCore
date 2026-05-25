@@ -41,10 +41,13 @@ class CognitionBridge:
             return cls._instance
 
     def reset_session_flags(self, session_id: str) -> None:
-        if session_id not in self._hermes_session_ids:
+        is_new = session_id not in self._hermes_session_ids
+        if is_new:
             self._hermes_session_ids.add(session_id)
             self._session_inject_pending = True
             self._wrap_up_sent = False
+            self._budget_enforcer = None
+            self._reset_metered_tokens_for_hermes_session()
 
     @property
     def data_mode(self) -> str:
@@ -75,23 +78,44 @@ class CognitionBridge:
                     logger.debug("legacy migration skipped: %s", exc)
         return self._facade
 
-    def shield_enabled(self) -> bool:
-        return bool(get_nested(self.cfg, "shield", "block_writes", default=True))
+    def shield_mode(self) -> str:
+        raw = str(get_nested(self.cfg, "shield", "mode", default="syntax")).lower()
+        if raw in ("off", "syntax", "strict"):
+            return raw
+        if raw in ("medium", "warn", "high"):
+            return "syntax"
+        return "syntax"
 
-    def shield_sensitivity(self) -> str:
-        return str(get_nested(self.cfg, "shield", "mode", default="medium"))
+    def shield_blocks_writes(self) -> bool:
+        if self.shield_mode() == "off":
+            return False
+        return bool(get_nested(self.cfg, "shield", "block_writes", default=False))
 
     def bootstrap_enabled(self) -> bool:
         return bool(get_nested(self.cfg, "bootstrap", "inject_on_session_start", default=True))
 
     def budget_enabled(self) -> bool:
-        return bool(get_nested(self.cfg, "budget", "zones", default=True))
+        if get_nested(self.cfg, "budget", "enabled") is False:
+            return False
+        return True
+
+    def budget_zone_injections(self) -> bool:
+        return bool(get_nested(self.cfg, "budget", "zones", default=False))
+
+    def budget_blocks_tools(self) -> bool:
+        return bool(get_nested(self.cfg, "budget", "enforce_tool_blocks", default=False))
+
+    def budget_wrap_up_messages(self) -> bool:
+        return bool(get_nested(self.cfg, "budget", "wrap_up_messages", default=False))
 
     def graphify_enabled(self) -> bool:
         return bool(get_nested(self.cfg, "graphify", "enabled", default=True))
 
     def graphify_block_rereads(self) -> bool:
         return bool(get_nested(self.cfg, "graphify", "block_rereads", default=False))
+
+    def graphify_inject_on_llm(self) -> bool:
+        return bool(get_nested(self.cfg, "graphify", "inject_on_llm", default=False))
 
     def graphify_nav_token_budget(self) -> int:
         custom = get_nested(self.cfg, "graphify", "navigation_token_budget")
@@ -113,7 +137,23 @@ class CognitionBridge:
         state = self._load_ce_session_state()
         if state and state.get("budget"):
             return int(state["budget"])
-        return 200_000
+        return 500_000
+
+    def _reset_metered_tokens_for_hermes_session(self) -> None:
+        """Avoid carrying tokens_used from an old Hermes run into a new one."""
+        try:
+            f = self.facade()
+            if not f.is_initialized():
+                return
+            state = f.ctx.load_session_state()
+            if not state:
+                return
+            state["tokens_used"] = 0
+            f.ctx.save_session_state(state)
+            op = f.ctx.active_operational_memory()
+            op.tokens_used = 0
+        except Exception as exc:
+            logger.debug("reset session tokens: %s", exc)
 
     def _load_ce_session_state(self) -> dict[str, Any] | None:
         try:
@@ -145,7 +185,7 @@ class CognitionBridge:
                     pass
             if self.graphify_enabled() and f.is_initialized():
                 gpath = self.cognition_dir / "graphify.json"
-                if not gpath.is_file() and get_nested(self.cfg, "graphify", "auto_index", default=True):
+                if not gpath.is_file() and get_nested(self.cfg, "graphify", "auto_index", default=False):
                     try:
                         self.graphify_engine().index(
                             max_files=int(get_nested(self.cfg, "graphify", "max_files", default=400)),
@@ -195,8 +235,10 @@ class CognitionBridge:
             logger.warning("cognition bootstrap inject: %s", exc)
         return None
 
-    def pre_llm_graphify_context(self, user_message: str = "") -> str | None:
+    def pre_llm_graphify_context(self, user_message: str = "", *, is_first_turn: bool = False) -> str | None:
         if not self.graphify_enabled():
+            return None
+        if not is_first_turn and not self.graphify_inject_on_llm():
             return None
         try:
             f = self.facade()
@@ -238,34 +280,50 @@ class CognitionBridge:
         except Exception:
             pass
         check = enforcer.check_budget()
+        if not self.budget_zone_injections() and check.get("continue_session", True):
+            return None
         parts: list[str] = []
-        if not check.get("continue_session", True):
+        if not check.get("continue_session", True) and self.budget_blocks_tools():
             parts.append(
                 check.get("warning")
                 or "TOKEN BUDGET EXHAUSTED. Do not make further API-heavy work. Produce handoff only."
             )
-        inject = check.get("inject_text") or enforcer.consume_pending_injection()
-        if inject:
-            parts.append(inject)
+        if self.budget_zone_injections():
+            inject = check.get("inject_text") or enforcer.consume_pending_injection()
+            if inject:
+                parts.append(inject)
         if parts:
             return {"context": "<cognition_budget>\n" + "\n\n".join(parts) + "\n</cognition_budget>"}
         return None
 
+    @staticmethod
+    def _usage_tokens_delta(usage: dict[str, Any]) -> int:
+        """Per-request tokens; avoid treating cumulative totals as repeated deltas."""
+        inp = int(usage.get("input_tokens") or usage.get("prompt_tokens") or 0)
+        out = int(usage.get("output_tokens") or usage.get("completion_tokens") or 0)
+        if inp > 0 or out > 0:
+            return inp + out
+        total = int(usage.get("total_tokens") or 0)
+        return total
+
     def post_api_tokens(self, usage: dict[str, Any] | None) -> None:
-        if not usage:
+        if not usage or not self.budget_enabled():
             return
-        total = int(usage.get("total_tokens") or usage.get("input_tokens", 0) + usage.get("output_tokens", 0))
+        total = self._usage_tokens_delta(usage)
         if total <= 0:
             return
+        if total > 200_000:
+            logger.warning("cognition: capping single-request token report %s -> 200000", total)
+            total = 200_000
         try:
             self.facade().record_api_tokens(total)
             enforcer = self.ensure_budget_enforcer()
-            enforcer.add_usage(total)
+            enforcer.tokens_used = self.facade().ctx.active_operational_memory().tokens_used
         except Exception as exc:
             logger.debug("post_api_request metering: %s", exc)
 
     def transform_llm_wrap_up(self, response_text: str) -> str | None:
-        if self._wrap_up_sent or not self.budget_enabled():
+        if self._wrap_up_sent or not self.budget_enabled() or not self.budget_wrap_up_messages():
             return None
         enforcer = self.ensure_budget_enforcer()
         check = enforcer.check_budget()
@@ -284,7 +342,7 @@ class CognitionBridge:
         tool_name: str,
         args: dict[str, Any],
     ) -> dict[str, str] | None:
-        if tool_name not in _WRITE_TOOLS or not self.shield_enabled():
+        if tool_name not in _WRITE_TOOLS or not self.shield_blocks_writes():
             return None
         try:
             f = self.facade()
@@ -293,7 +351,9 @@ class CognitionBridge:
             path, proposed, original = self._extract_write_payload(tool_name, args)
             if not path or proposed is None:
                 return None
-            result = f.validate_code(path, proposed, original_content=original)
+            result = f.validate_code(
+                path, proposed, original_content=original, mode=self.shield_mode()
+            )
             if result.get("passed"):
                 return None
             verdict = result.get("verdict", "BLOCK")
@@ -322,7 +382,9 @@ class CognitionBridge:
             path, proposed, original = self._extract_write_payload(tool_name, args)
             if not path or proposed is None:
                 return None
-            validation = f.validate_code(path, proposed, original_content=original)
+            validation = f.validate_code(
+                path, proposed, original_content=original, mode=self.shield_mode()
+            )
             corrected = validation.get("proposed_content") or validation.get("corrected_content")
             if validation.get("auto_corrected") and corrected and corrected != proposed:
                 return json.dumps(

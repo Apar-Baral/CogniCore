@@ -20,9 +20,14 @@ class ValidationPipeline:
         file_path: str,
         original: str,
         proposed: str,
+        *,
+        mode: str = "syntax",
     ) -> dict[str, Any]:
         self._stats["validated"] += 1
         issues: list[str] = []
+        shield_mode = (mode or "syntax").lower()
+        if shield_mode == "off":
+            return {"passed": True, "verdict": "PASS"}
         try:
             tree = ast.parse(proposed)
         except SyntaxError as e:
@@ -31,6 +36,8 @@ class ValidationPipeline:
                 "verdict": "BLOCK",
                 "issues": [f"SyntaxError: {e}"],
             }
+        if shield_mode == "syntax":
+            return {"passed": True, "verdict": "PASS"}
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
